@@ -1,15 +1,6 @@
 package de.plushnikov.intellij.plugin.processor.field;
 
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigDiscovery;
 import de.plushnikov.intellij.plugin.lombokconfig.ConfigKey;
@@ -27,6 +18,7 @@ import java.util.List;
 /**
  * Inspect and validate @FieldNameConstants lombok annotation on a field
  * Creates string constants containing the field name for each field
+ * Used for lombok v1.16.22 to lombok v1.18.2 only!
  *
  * @author Plushnikov Michail
  */
@@ -36,6 +28,12 @@ public class FieldNameConstantsFieldProcessor extends AbstractFieldProcessor {
 
   public FieldNameConstantsFieldProcessor() {
     super(PsiField.class, FieldNameConstants.class);
+  }
+
+  @Override
+  protected boolean supportAnnotationVariant(@NotNull PsiAnnotation psiAnnotation) {
+    // old version of @FieldNameConstants has a attributes "prefix" and "suffix", the new one not
+    return null != psiAnnotation.findAttributeValue("prefix");
   }
 
   @Override

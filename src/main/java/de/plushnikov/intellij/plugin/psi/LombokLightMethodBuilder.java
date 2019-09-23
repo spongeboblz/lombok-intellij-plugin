@@ -3,22 +3,7 @@ package de.plushnikov.intellij.plugin.psi;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiCodeBlock;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiIdentifier;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiModifierList;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiReferenceList;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeParameter;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.CheckUtil;
 import com.intellij.psi.impl.light.LightMethodBuilder;
 import com.intellij.psi.impl.light.LightModifierList;
@@ -31,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -46,7 +32,7 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   public LombokLightMethodBuilder(@NotNull PsiManager manager, @NotNull String name) {
     super(manager, JavaLanguage.INSTANCE, name,
       new LombokLightParameterListBuilder(manager, JavaLanguage.INSTANCE),
-      new LombokLightModifierList(manager, JavaLanguage.INSTANCE),
+      new LombokLightModifierList(manager, JavaLanguage.INSTANCE, Collections.emptySet()),
       new LombokLightReferenceListBuilder(manager, JavaLanguage.INSTANCE, PsiReferenceList.Role.THROWS_LIST),
       new LightTypeParameterListBuilder(manager, JavaLanguage.INSTANCE));
     setBaseIcon(LombokIcons.METHOD_ICON);
@@ -80,8 +66,19 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
     return super.setMethodReturnType(returnType);
   }
 
+  public LombokLightMethodBuilder withFinalParameter(@NotNull String name, @NotNull PsiType type) {
+    final LombokLightParameter lombokLightParameter = createParameter(name, type);
+    lombokLightParameter.setModifiers(PsiModifier.FINAL);
+    return withParameter(lombokLightParameter);
+  }
+
   public LombokLightMethodBuilder withParameter(@NotNull String name, @NotNull PsiType type) {
-    return withParameter(new LombokLightParameter(name, type, this, JavaLanguage.INSTANCE));
+    return withParameter(createParameter(name, type));
+  }
+
+  @NotNull
+  private LombokLightParameter createParameter(@NotNull String name, @NotNull PsiType type) {
+    return new LombokLightParameter(name, type, this, JavaLanguage.INSTANCE);
   }
 
   public LombokLightMethodBuilder withParameter(@NotNull PsiParameter psiParameter) {
@@ -167,7 +164,8 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   @Override
   public ASTNode getNode() {
     if (null == myASTNode) {
-      myASTNode = getOrCreateMyPsiMethod().getNode();
+      final PsiElement myPsiMethod = getOrCreateMyPsiMethod();
+      myASTNode = null == myPsiMethod ? null : myPsiMethod.getNode();
     }
     return myASTNode;
   }
@@ -189,34 +187,41 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   }
 
   private PsiMethod rebuildMethodFromString() {
-    final StringBuilder methodTextDeclaration = new StringBuilder();
-    methodTextDeclaration.append(getAllModifierProperties((LightModifierList) getModifierList()));
-    PsiType returnType = getReturnType();
-    if (null != returnType) {
-      methodTextDeclaration.append(returnType.getCanonicalText()).append(' ');
-    }
-    methodTextDeclaration.append(getName());
-    methodTextDeclaration.append('(');
-    if (getParameterList().getParametersCount() > 0) {
-      for (PsiParameter parameter : getParameterList().getParameters()) {
-        methodTextDeclaration.append(parameter.getType().getCanonicalText()).append(' ').append(parameter.getName()).append(',');
+    PsiMethod result;
+    try {
+      final StringBuilder methodTextDeclaration = new StringBuilder();
+      methodTextDeclaration.append(getAllModifierProperties((LightModifierList) getModifierList()));
+      PsiType returnType = getReturnType();
+      if (null != returnType && returnType.isValid()) {
+        methodTextDeclaration.append(returnType.getCanonicalText()).append(' ');
       }
-      methodTextDeclaration.deleteCharAt(methodTextDeclaration.length() - 1);
-    }
-    methodTextDeclaration.append(')');
-    methodTextDeclaration.append('{').append("  ").append('}');
+      methodTextDeclaration.append(getName());
+      methodTextDeclaration.append('(');
+      if (getParameterList().getParametersCount() > 0) {
+        for (PsiParameter parameter : getParameterList().getParameters()) {
+          methodTextDeclaration.append(parameter.getType().getCanonicalText()).append(' ').append(parameter.getName()).append(',');
+        }
+        methodTextDeclaration.deleteCharAt(methodTextDeclaration.length() - 1);
+      }
+      methodTextDeclaration.append(')');
+      methodTextDeclaration.append('{').append("  ").append('}');
 
-    final PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(getManager().getProject());
+      final PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(getManager().getProject());
 
-    final PsiMethod methodFromText = elementFactory.createMethodFromText(methodTextDeclaration.toString(), getContainingClass());
-    if (null != getBody()) {
-      methodFromText.getBody().replace(getBody());
+      result = elementFactory.createMethodFromText(methodTextDeclaration.toString(), getContainingClass());
+      if (null != getBody()) {
+        result.getBody().replace(getBody());
+      }
+    } catch (Exception ex) {
+      result = null;
     }
-    return methodFromText;
+    return result;
   }
 
+  @Override
   public PsiElement copy() {
-    return getOrCreateMyPsiMethod().copy();
+    final PsiElement myPsiMethod = getOrCreateMyPsiMethod();
+    return null == myPsiMethod ? null : myPsiMethod.copy();
   }
 
   private PsiElement getOrCreateMyPsiMethod() {
@@ -229,7 +234,8 @@ public class LombokLightMethodBuilder extends LightMethodBuilder {
   @NotNull
   @Override
   public PsiElement[] getChildren() {
-    return getOrCreateMyPsiMethod().getChildren();
+    final PsiElement myPsiMethod = getOrCreateMyPsiMethod();
+    return null == myPsiMethod ? PsiElement.EMPTY_ARRAY : myPsiMethod.getChildren();
   }
 
   public String toString() {

@@ -19,7 +19,6 @@ import java.util.Set;
 public class ValueModifierProcessor implements ModifierProcessor {
 
   @Override
-  @SuppressWarnings("unchecked")
   public boolean isSupported(@NotNull PsiModifierList modifierList) {
 
     final PsiElement modifierListParent = modifierList.getParent();
@@ -30,11 +29,14 @@ public class ValueModifierProcessor implements ModifierProcessor {
 
     PsiClass searchableClass = PsiTreeUtil.getParentOfType(modifierList, PsiClass.class, true);
 
-    return null != searchableClass && PsiAnnotationSearchUtil.isAnnotatedWith(searchableClass, lombok.Value.class, lombok.experimental.Value.class);
+    return null != searchableClass && PsiAnnotationSearchUtil.isAnnotatedWith(searchableClass, lombok.Value.class);
   }
 
   @Override
   public void transformModifiers(@NotNull PsiModifierList modifierList, @NotNull final Set<String> modifiers) {
+    if (modifiers.contains(PsiModifier.STATIC)) {
+      return; // skip static fields
+    }
 
     final PsiModifierListOwner parentElement = PsiTreeUtil.getParentOfType(modifierList, PsiModifierListOwner.class, false);
     if (null != parentElement) {

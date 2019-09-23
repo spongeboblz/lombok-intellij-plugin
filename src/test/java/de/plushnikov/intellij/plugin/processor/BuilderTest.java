@@ -37,10 +37,6 @@ public class BuilderTest extends AbstractLombokParsingTestCase {
     doTest(true);
   }
 
-  public void testBuilder$BuilderChainAndFluent() {
-    doTest(true);
-  }
-
   public void testBuilder$BuilderWithAccessors() {
     doTest(true);
   }
@@ -128,4 +124,15 @@ public class BuilderTest extends AbstractLombokParsingTestCase {
     doTest(true);
   }
 
+  public void testBuilder$BuilderWithNoBuilderMethod() {
+    doTest(true);
+  }
+
+  public void testBuilder$BuilderSimpleProtected() {
+    doTest(true);
+  }
+
+  public void testBuilder$BuilderWithTolerate() {
+    doTest(true);
+  }
 }

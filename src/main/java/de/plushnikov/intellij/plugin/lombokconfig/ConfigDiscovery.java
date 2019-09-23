@@ -47,7 +47,7 @@ public class ConfigDiscovery {
 
   @NotNull
   public String[] getMultipleValueLombokConfigProperty(@NotNull ConfigKey configKey, @NotNull PsiClass psiClass) {
-    final Collection<String> result = new HashSet<String>();
+    final Collection<String> result = new HashSet<>();
 
     final String canonicalPath = calculateCanonicalPath(psiClass);
     if (null != canonicalPath) {
@@ -69,7 +69,7 @@ public class ConfigDiscovery {
     } else {
       result.add(configKey.getConfigDefaultValue());
     }
-    return result.toArray(new String[result.size()]);
+    return result.toArray(new String[0]);
   }
 
   @Nullable
@@ -116,13 +116,15 @@ public class ConfigDiscovery {
     String currentPath = canonicalPath;
     while (null != currentPath) {
 
-      final String property = readProperty(fileBasedIndex, searchScope, currentPath, configKey);
-      if (null == property) {
-        if (shouldStopBubbling(fileBasedIndex, searchScope, currentPath)) {
-          break;
+      final ConfigValue configValue = readProperty(fileBasedIndex, searchScope, currentPath, configKey);
+      if (null != configValue) {
+        if (null == configValue.getValue()) {
+          if (configValue.isStopBubbling()) {
+            break;
+          }
+        } else {
+          return configValue.getValue();
         }
-      } else {
-        return property;
       }
 
       currentPath = bubbleUp(currentPath);
@@ -142,15 +144,10 @@ public class ConfigDiscovery {
     return currentPath;
   }
 
-  private boolean shouldStopBubbling(@NotNull FileBasedIndex fileBasedIndex, @NotNull GlobalSearchScope searchScope, @NotNull String currentPath) {
-    final String stopBubblingProperty = readProperty(fileBasedIndex, searchScope, currentPath, ConfigKey.CONFIG_STOP_BUBBLING);
-    return Boolean.parseBoolean(stopBubblingProperty);
-  }
-
   @Nullable
-  private String readProperty(FileBasedIndex fileBasedIndex, GlobalSearchScope searchScope, String directoryName, ConfigKey configKey) {
+  private ConfigValue readProperty(FileBasedIndex fileBasedIndex, GlobalSearchScope searchScope, String directoryName, ConfigKey configKey) {
     final ConfigIndexKey configIndexKey = new ConfigIndexKey(directoryName, configKey.getConfigKey());
-    final List<String> values = fileBasedIndex.getValues(LombokConfigIndex.NAME, configIndexKey, searchScope);
+    final List<ConfigValue> values = fileBasedIndex.getValues(LombokConfigIndex.NAME, configIndexKey, searchScope);
     if (!values.isEmpty()) {
       return values.iterator().next();
     }
@@ -159,20 +156,22 @@ public class ConfigDiscovery {
 
   @NotNull
   private List<String> discoverProperties(@NotNull ConfigKey configKey, @NotNull String canonicalPath, @NotNull Project project) {
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
 
     final GlobalSearchScope searchScope = GlobalSearchScope.projectScope(project);
 
     String currentPath = canonicalPath;
     while (null != currentPath) {
 
-      final String property = readProperty(fileBasedIndex, searchScope, currentPath, configKey);
-      if (null == property) {
-        if (shouldStopBubbling(fileBasedIndex, searchScope, currentPath)) {
-          break;
+      final ConfigValue configValue = readProperty(fileBasedIndex, searchScope, currentPath, configKey);
+      if (null != configValue) {
+        if (null == configValue.getValue()) {
+          if (configValue.isStopBubbling()) {
+            break;
+          }
+        } else {
+          result.add(configValue.getValue());
         }
-      } else {
-        result.add(property);
       }
 
       currentPath = bubbleUp(currentPath);

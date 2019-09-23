@@ -1,19 +1,9 @@
 package de.plushnikov.intellij.plugin.processor.handler;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiModifierList;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiSubstitutor;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeParameter;
-import com.intellij.psi.PsiVariable;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.psi.*;
+import com.intellij.psi.impl.PsiImplUtil;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
 import de.plushnikov.intellij.plugin.processor.handler.singular.BuilderElementHandler;
@@ -22,7 +12,6 @@ import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
-import de.plushnikov.intellij.util.StringUtils;
 import lombok.Builder;
 import lombok.Singular;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +30,9 @@ public class BuilderInfo {
   private PsiVariable variableInClass;
   private PsiType fieldInBuilderType;
   private boolean deprecated;
+  private String visibilityModifier;
+
+  private String builderChainResult = "this";
 
   private PsiClass builderClass;
   private PsiType builderClassType;
@@ -52,20 +44,18 @@ public class BuilderInfo {
   private PsiAnnotation singularAnnotation;
   private BuilderElementHandler builderElementHandler;
 
-  private boolean fluentBuilder = true;
-  private boolean chainBuilder = true;
-
   private PsiAnnotation obtainViaAnnotation;
   private String viaFieldName;
   private String viaMethodName;
   private boolean viaStaticCall;
+  private String instanceVariableName = "this";
 
   public static BuilderInfo fromPsiParameter(@NotNull PsiParameter psiParameter) {
     final BuilderInfo result = new BuilderInfo();
 
     result.variableInClass = psiParameter;
     result.fieldInBuilderType = psiParameter.getType();
-    result.deprecated = PsiAnnotationSearchUtil.isAnnotatedWith(psiParameter, Deprecated.class);
+    result.deprecated = hasDeprecatedAnnotation(psiParameter);
     result.fieldInitializer = null;
     result.hasBuilderDefaultAnnotation = false;
 
@@ -77,14 +67,18 @@ public class BuilderInfo {
     return result;
   }
 
+  private static boolean hasDeprecatedAnnotation(@NotNull PsiModifierListOwner modifierListOwner) {
+    return PsiAnnotationSearchUtil.isAnnotatedWith(modifierListOwner, Deprecated.class);
+  }
+
   public static BuilderInfo fromPsiField(@NotNull PsiField psiField) {
     final BuilderInfo result = new BuilderInfo();
 
     result.variableInClass = psiField;
-    result.deprecated = psiField.isDeprecated();
+    result.deprecated = isDeprecated(psiField);
     result.fieldInBuilderType = psiField.getType();
     result.fieldInitializer = psiField.getInitializer();
-    result.hasBuilderDefaultAnnotation = null == PsiAnnotationSearchUtil.findAnnotation(psiField, BUILDER_DEFAULT_ANNOTATION);
+    result.hasBuilderDefaultAnnotation = PsiAnnotationSearchUtil.isAnnotatedWith(psiField, BUILDER_DEFAULT_ANNOTATION);
 
     final AccessorsInfo accessorsInfo = AccessorsInfo.build(psiField);
     result.fieldInBuilderName = accessorsInfo.removePrefix(psiField.getName());
@@ -95,24 +89,33 @@ public class BuilderInfo {
     return result;
   }
 
+  private static boolean isDeprecated(@NotNull PsiField psiField) {
+    return PsiImplUtil.isDeprecatedByDocTag(psiField) || hasDeprecatedAnnotation(psiField);
+  }
+
   public BuilderInfo withSubstitutor(@NotNull PsiSubstitutor builderSubstitutor) {
     fieldInBuilderType = builderSubstitutor.substitute(fieldInBuilderType);
     return this;
   }
 
-  public BuilderInfo withFluent(boolean fluentBuilder) {
-    this.fluentBuilder = fluentBuilder;
-    return this;
-  }
-
-  public BuilderInfo withChain(boolean chainBuilder) {
-    this.chainBuilder = chainBuilder;
+  public BuilderInfo withVisibilityModifier(String visibilityModifier) {
+    this.visibilityModifier = visibilityModifier;
     return this;
   }
 
   public BuilderInfo withBuilderClass(@NotNull PsiClass builderClass) {
     this.builderClass = builderClass;
     this.builderClassType = PsiClassUtil.getTypeWithGenerics(builderClass);
+    return this;
+  }
+
+  public BuilderInfo withBuilderClassType(@NotNull PsiClassType builderClassType) {
+    this.builderClassType = builderClassType;
+    return this;
+  }
+
+  public BuilderInfo withBuilderChainResult(@NotNull String builderChainResult) {
+    this.builderChainResult = builderChainResult;
     return this;
   }
 
@@ -136,7 +139,7 @@ public class BuilderInfo {
 
       // skip initialized final fields unless annotated with @Builder.Default
       final boolean isInitializedFinalField = null != fieldInitializer && modifierList.hasModifierProperty(PsiModifier.FINAL);
-      if (isInitializedFinalField && hasBuilderDefaultAnnotation) {
+      if (isInitializedFinalField && !hasBuilderDefaultAnnotation) {
         result = false;
       }
     }
@@ -179,12 +182,9 @@ public class BuilderInfo {
     return deprecated;
   }
 
-  public boolean isFluentBuilder() {
-    return fluentBuilder;
-  }
-
-  public boolean isChainBuilder() {
-    return chainBuilder;
+  @PsiModifier.ModifierConstant
+  public String getVisibilityModifier() {
+    return visibilityModifier;
   }
 
   public PsiClass getBuilderClass() {
@@ -195,6 +195,10 @@ public class BuilderInfo {
     return builderClassType;
   }
 
+  public String getBuilderChainResult() {
+    return builderChainResult;
+  }
+
   public PsiAnnotation getSingularAnnotation() {
     return singularAnnotation;
   }
@@ -203,7 +207,11 @@ public class BuilderInfo {
     return null != singularAnnotation;
   }
 
-  public boolean hasObtainVaiAnnotatation() {
+  public boolean hasBuilderDefaultAnnotation() {
+    return hasBuilderDefaultAnnotation;
+  }
+
+  public boolean hasObtainViaAnnotation() {
     return null != obtainViaAnnotation;
   }
 
@@ -219,9 +227,13 @@ public class BuilderInfo {
     return viaStaticCall;
   }
 
+  public String getInstanceVariableName() {
+    return instanceVariableName;
+  }
+
   public Collection<String> getAnnotations() {
     if (deprecated) {
-      return Collections.singleton(Deprecated.class.getName());
+      return Collections.singleton(CommonClassNames.JAVA_LANG_DEPRECATED);
     }
     return Collections.emptyList();
   }
@@ -238,36 +250,35 @@ public class BuilderInfo {
     return builderElementHandler.renderBuildPrepare(variableInClass, fieldInBuilderName);
   }
 
+  public String renderSuperBuilderConstruction() {
+    return builderElementHandler.renderSuperBuilderConstruction(variableInClass, fieldInBuilderName);
+  }
+
   public String renderBuildCall() {
     return fieldInBuilderName;
   }
 
   public CharSequence renderToBuilderCall() {
-    final StringBuilder result = new StringBuilder();
+    if (hasObtainViaAnnotation()) {
+      final StringBuilder result = new StringBuilder();
+      result.append(fieldInBuilderName);
+      result.append('(');
+      if (StringUtil.isNotEmpty(viaFieldName)) {
+        result.append(instanceVariableName).append(".").append(viaFieldName);
+      } else if (StringUtil.isNotEmpty(viaMethodName)) {
 
-    result.append(fieldInBuilderName);
-    result.append('(');
-    if (hasObtainVaiAnnotatation()) {
-      if (StringUtils.isNotEmpty(viaFieldName)) {
-        result.append("this.");
-        result.append(viaFieldName);
-      } else if (StringUtils.isNotEmpty(viaMethodName)) {
-
-        result.append(viaStaticCall ? getPsiClass().getName() : "this");
+        result.append(viaStaticCall ? getPsiClass().getName() : instanceVariableName);
         result.append('.');
         result.append(viaMethodName);
-        result.append(viaStaticCall ? "(this)" : "()");
+        result.append(viaStaticCall ? "(" + instanceVariableName + ")" : "()");
       } else {
-        result.append("this.");
-        result.append(variableInClass.getName());
+        result.append(instanceVariableName).append(".").append(variableInClass.getName());
       }
+      result.append(')');
+      return result;
     } else {
-      result.append("this.");
-      result.append(variableInClass.getName());
+      return builderElementHandler.renderToBuilderCall(this);
     }
-    result.append(')');
-
-    return result;
   }
 
   private PsiClass getPsiClass() {
@@ -277,7 +288,7 @@ public class BuilderInfo {
   public Optional<PsiType> getObtainViaFieldVariableType() {
     PsiVariable psiVariable = variableInClass;
 
-    if (StringUtils.isNotEmpty(viaFieldName)) {
+    if (StringUtil.isNotEmpty(viaFieldName)) {
       final PsiField fieldByName = getPsiClass().findFieldByName(viaFieldName, false);
       if (fieldByName != null) {
         psiVariable = fieldByName;
@@ -295,4 +306,7 @@ public class BuilderInfo {
     return Optional.empty();
   }
 
+  public void withInstanceVariableName(String instanceVariableName) {
+    this.instanceVariableName = instanceVariableName;
+  }
 }

@@ -10,11 +10,14 @@ import com.intellij.refactoring.rename.RenameJavaVariableProcessor;
 import de.plushnikov.intellij.plugin.processor.field.AccessorsInfo;
 import de.plushnikov.intellij.plugin.processor.handler.singular.BuilderElementHandler;
 import de.plushnikov.intellij.plugin.processor.handler.singular.SingularHandlerFactory;
+import de.plushnikov.intellij.plugin.psi.LombokLightClassBuilder;
+import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.psi.LombokLightMethodBuilder;
 import de.plushnikov.intellij.plugin.thirdparty.LombokUtils;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import lombok.Builder;
 import lombok.Singular;
+import lombok.experimental.FieldNameConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -23,19 +26,13 @@ import java.util.Map;
 
 public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProcessor {
 
-  public LombokRenameFieldReferenceProcessor() {
-  }
-
   @Override
   public boolean canProcessElement(@NotNull PsiElement element) {
-    if (element instanceof PsiField) {
+    if (element instanceof PsiField && !(element instanceof LombokLightFieldBuilder)) {
       final PsiClass containingClass = ((PsiField) element).getContainingClass();
       if (null != containingClass) {
-        for (PsiMethod psiMethod : containingClass.getAllMethods()) {
-          if(psiMethod instanceof LombokLightMethodBuilder){
-            return true;
-          }
-        }
+        return Arrays.stream(containingClass.getMethods()).anyMatch(LombokLightMethodBuilder.class::isInstance) ||
+          Arrays.stream(containingClass.getInnerClasses()).anyMatch(LombokLightClassBuilder.class::isInstance);
       }
     }
     return false;
@@ -63,7 +60,7 @@ public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProce
         allRenames.put(psiMethod, LombokUtils.toSetterName(accessorsInfo, newFieldName, isBoolean));
       }
 
-      if(!accessorsInfo.isFluent()) {
+      if (!accessorsInfo.isFluent()) {
         final String witherName = LombokUtils.toWitherName(accessorsInfo, currentFieldName, isBoolean);
         final PsiMethod[] psiWitherMethods = containingClass.findMethodsByName(witherName, false);
         for (PsiMethod psiMethod : psiWitherMethods) {
@@ -71,7 +68,7 @@ public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProce
         }
       }
 
-      final PsiAnnotation builderAnnotation = PsiAnnotationSearchUtil.findAnnotation(containingClass, Builder.class, lombok.experimental.Builder.class);
+      final PsiAnnotation builderAnnotation = PsiAnnotationSearchUtil.findAnnotation(containingClass, Builder.class, lombok.experimental.SuperBuilder.class);
       if (null != builderAnnotation) {
         final PsiAnnotation singularAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, Singular.class);
         final BuilderElementHandler handler = SingularHandlerFactory.getHandlerFor(psiField, singularAnnotation);
@@ -91,6 +88,16 @@ public class LombokRenameFieldReferenceProcessor extends RenameJavaVariableProce
               }
             });
         }
+      }
+
+      final boolean hasFieldNameConstantAnnotation = PsiAnnotationSearchUtil.isAnnotatedWith(containingClass, FieldNameConstants.class);
+      if (hasFieldNameConstantAnnotation) {
+        Arrays.stream(containingClass.getInnerClasses())
+          .map(PsiClass::getFields)
+          .flatMap(Arrays::stream)
+          .filter(LombokLightFieldBuilder.class::isInstance)
+          .filter(myField -> myField.getNavigationElement() == psiField)
+          .forEach(myField -> allRenames.put(myField, newFieldName));
       }
     }
   }

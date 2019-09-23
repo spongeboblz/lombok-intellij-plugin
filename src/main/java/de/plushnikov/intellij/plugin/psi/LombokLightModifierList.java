@@ -23,13 +23,24 @@ import java.util.Set;
  * @author Plushnikov Michail
  */
 public class LombokLightModifierList extends LightModifierList {
-  private static final Set<String> ALL_MODIFIERS = new HashSet<String>(Arrays.asList(PsiModifier.MODIFIERS));
+  private static final Set<String> ALL_MODIFIERS = new HashSet<>(Arrays.asList(PsiModifier.MODIFIERS));
 
   private final Map<String, PsiAnnotation> myAnnotations;
+  private final Set<String> myImplicitModifiers;
 
-  public LombokLightModifierList(PsiManager manager, final Language language, String... modifiers) {
+  public LombokLightModifierList(PsiManager manager, final Language language, Collection<String> implicitModifiers, String... modifiers) {
     super(manager, language, modifiers);
-    myAnnotations = new HashMap<String, PsiAnnotation>();
+    this.myAnnotations = new HashMap<>();
+    this.myImplicitModifiers = new HashSet<>(implicitModifiers);
+  }
+
+  @Override
+  public boolean hasModifierProperty(@NotNull String name) {
+    return myImplicitModifiers.contains(name) || super.hasModifierProperty(name);
+  }
+
+  public void addImplicitModifierProperty(@PsiModifier.ModifierConstant @NotNull @NonNls String implicitModifier) {
+    myImplicitModifiers.add(implicitModifier);
   }
 
   public void setModifierProperty(@PsiModifier.ModifierConstant @NotNull @NonNls String name, boolean value) throws IncorrectOperationException {
@@ -54,9 +65,9 @@ public class LombokLightModifierList extends LightModifierList {
   }
 
   private Collection<String> collectAllModifiers() {
-    Collection<String> result = new HashSet<String>();
+    Collection<String> result = new HashSet<>();
     for (@PsiModifier.ModifierConstant String modifier : ALL_MODIFIERS) {
-      if (hasModifierProperty(modifier)) {
+      if (hasExplicitModifier(modifier)) {
         result.add(modifier);
       }
     }
@@ -87,7 +98,7 @@ public class LombokLightModifierList extends LightModifierList {
     PsiAnnotation[] result = PsiAnnotation.EMPTY_ARRAY;
     if (!myAnnotations.isEmpty()) {
       Collection<PsiAnnotation> annotations = myAnnotations.values();
-      result = annotations.toArray(new PsiAnnotation[annotations.size()]);
+      result = annotations.toArray(new PsiAnnotation[0]);
     }
     return result;
   }
@@ -113,11 +124,7 @@ public class LombokLightModifierList extends LightModifierList {
 
     LombokLightModifierList that = (LombokLightModifierList) o;
 
-    if (!myAnnotations.equals(that.myAnnotations)) {
-      return false;
-    }
-
-    return true;
+    return myAnnotations.equals(that.myAnnotations);
   }
 
   @Override

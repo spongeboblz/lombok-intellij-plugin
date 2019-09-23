@@ -16,6 +16,10 @@ public class ToStringTest extends AbstractLombokConfigSystemTestCase {
     return super.getBasePath() + "/configsystem/tostring";
   }
 
+  public void testConfiguration$ToStringConfiguration() throws IOException {
+    doTest();
+  }
+
   public void testDoNotUseGetters$SomeTest() throws IOException {
     doTest();
   }
@@ -29,6 +33,18 @@ public class ToStringTest extends AbstractLombokConfigSystemTestCase {
   }
 
   public void testIncludeFieldNames$AnnotationOverwriteTest() throws IOException {
+    doTest();
+  }
+
+  public void testCallSuper$AnnotationOverwriteTest() throws IOException {
+    doTest();
+  }
+
+  public void testCallSuper$SomeTestWithSuper() throws IOException {
+    doTest();
+  }
+
+  public void testCallSuper$SomeTestWithoutSuper() throws IOException {
     doTest();
   }
 }

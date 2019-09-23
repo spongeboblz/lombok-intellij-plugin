@@ -4,7 +4,6 @@ import com.intellij.codeInsight.completion.CompletionType;
 import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 import org.hamcrest.CoreMatchers;
 
-import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -19,7 +18,7 @@ public class LoggerCompletionTest extends AbstractLombokLightCodeInsightTestCase
     return super.getBasePath() + "/configsystem/completion";
   }
 
-  public void testLoggerCompletionTest() throws IOException {
+  public void testLoggerCompletionTest() {
     doTest("LOGGER1");
   }
 

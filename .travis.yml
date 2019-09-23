@@ -1,15 +1,18 @@
 language: java
-sudo: false
-
 jdk:
   - openjdk6
+git:
+  submodules: false
 
-before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+# Cache settings
 cache:
+  timeout: 600
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 env:
   - IDEA_VERSION=IC-2016.1.4
@@ -18,8 +21,8 @@ env:
   - IDEA_VERSION=IC-2016.1
 
 before_install:
- - chmod +x gradlew
- - pip install --user codecov
+  - chmod +x gradlew
+  - pip install --user codecov
 
 after_success:
   - codecov
@@ -28,6 +31,19 @@ notifications:
   webhooks:
     urls:
       - https://webhooks.gitter.im/e/33baacd26d1b840aebaa
-    on_success: always  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
-    on_start: never     # options: [always|never|change] default: always
+    on_success: always
+    on_failure: always
+    on_start: never
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "${GITHUB_KEY}"
+  skip_cleanup: true
+  file_glob: true
+  file: "build/distributions/lombok-plugin-*.zip"
+  on:
+    tags: true
+    condition: "$TRAVIS_TAG =~ ^releasebuild_[0-9]+.*$"
+after_deploy:
+  - ./gradlew publishPlugin

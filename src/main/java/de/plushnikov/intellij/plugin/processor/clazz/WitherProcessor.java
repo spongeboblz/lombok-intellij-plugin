@@ -16,6 +16,7 @@ import de.plushnikov.intellij.plugin.util.LombokProcessorUtil;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
 import lombok.Builder;
+import lombok.With;
 import lombok.experimental.Wither;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,9 +29,9 @@ public class WitherProcessor extends AbstractClassProcessor {
 
   private final WitherFieldProcessor fieldProcessor;
 
-  public WitherProcessor(WitherFieldProcessor fieldProcessor) {
-    super(PsiMethod.class, Wither.class);
-    this.fieldProcessor = fieldProcessor;
+  public WitherProcessor(@NotNull WitherFieldProcessor witherFieldProcessor) {
+    super(PsiMethod.class, Wither.class, With.class);
+    this.fieldProcessor = witherFieldProcessor;
   }
 
   @Override
@@ -63,7 +64,7 @@ public class WitherProcessor extends AbstractClassProcessor {
 
   @NotNull
   private Collection<PsiMethod> createFieldWithers(@NotNull PsiClass psiClass, @NotNull String methodModifier, @NotNull AccessorsInfo accessors) {
-    Collection<PsiMethod> result = new ArrayList<PsiMethod>();
+    Collection<PsiMethod> result = new ArrayList<>();
 
     final Collection<PsiField> witherFields = getWitherFields(psiClass);
 
@@ -79,7 +80,7 @@ public class WitherProcessor extends AbstractClassProcessor {
 
   @NotNull
   private Collection<PsiField> getWitherFields(@NotNull PsiClass psiClass) {
-    Collection<PsiField> witherFields = new ArrayList<PsiField>();
+    Collection<PsiField> witherFields = new ArrayList<>();
     for (PsiField psiField : psiClass.getFields()) {
       boolean createWither = true;
       PsiModifierList modifierList = psiField.getModifierList();
@@ -92,7 +93,7 @@ public class WitherProcessor extends AbstractClassProcessor {
         // Skip fields that start with $
         createWither &= !psiField.getName().startsWith(LombokUtils.LOMBOK_INTERN_FIELD_MARKER);
         // Skip fields having Wither annotation already
-        createWither &= !PsiAnnotationSearchUtil.isAnnotatedWith(psiField, Wither.class);
+        createWither &= !PsiAnnotationSearchUtil.isAnnotatedWith(psiField, Wither.class, With.class);
       }
       if (createWither) {
         witherFields.add(psiField);

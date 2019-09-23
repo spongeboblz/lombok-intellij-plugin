@@ -243,7 +243,7 @@ public class LombokHandlerUtil {
     }
     if (!isBoolean) {
       String accessorName = toAccessorName(accessors, fieldName, false, booleanPrefix, normalPrefix, adhereToFluent);
-      return (accessorName == null) ? Collections.<String>emptyList() : Collections.singletonList(accessorName);
+      return (accessorName == null) ? Collections.emptyList() : Collections.singletonList(accessorName);
     }
 
     boolean explicitPrefix = accessors != null && false;//accessors.isExplicit("prefix");
@@ -260,7 +260,7 @@ public class LombokHandlerUtil {
 
     List<String> baseNames = toBaseNames(fieldName, isBoolean, fluent);
 
-    Set<String> names = new HashSet<String>();
+    Set<String> names = new HashSet<>();
     for (String baseName : baseNames) {
       if (adhereToFluent && fluent) {
         names.add(baseName);
@@ -272,12 +272,12 @@ public class LombokHandlerUtil {
       }
     }
 
-    return new ArrayList<String>(names);
+    return new ArrayList<>(names);
 
   }
 
   private static List<String> toBaseNames(CharSequence fieldName, boolean isBoolean, boolean fluent) {
-    List<String> baseNames = new ArrayList<String>();
+    List<String> baseNames = new ArrayList<>();
     baseNames.add(fieldName.toString());
 
     // isPrefix = field is called something like 'isRunning', so 'running' could also be the fieldname.

@@ -32,12 +32,14 @@ import java.util.List;
  */
 public class BuilderProcessor extends AbstractClassProcessor {
 
+  static final String SINGULAR_CLASS = Singular.class.getName();
+  static final String BUILDER_DEFAULT_CLASS = Builder.Default.class.getName().replace("$", ".");
+
   private final BuilderHandler builderHandler;
   private final AllArgsConstructorProcessor allArgsConstructorProcessor;
 
-  @SuppressWarnings({"deprecation", "unchecked"})
-  public BuilderProcessor(@NotNull AllArgsConstructorProcessor allArgsConstructorProcessor, @NotNull BuilderHandler builderHandler) {
-    super(PsiMethod.class, Builder.class, lombok.experimental.Builder.class);
+  public BuilderProcessor(@NotNull BuilderHandler builderHandler, @NotNull AllArgsConstructorProcessor allArgsConstructorProcessor) {
+    super(PsiMethod.class, Builder.class);
     this.builderHandler = builderHandler;
     this.allArgsConstructorProcessor = allArgsConstructorProcessor;
   }
@@ -51,18 +53,13 @@ public class BuilderProcessor extends AbstractClassProcessor {
   @Override
   public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
     final Collection<PsiAnnotation> result = super.collectProcessedAnnotations(psiClass);
-    for (PsiField psiField : PsiClassUtil.collectClassFieldsIntern(psiClass)) {
-      PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, Singular.class);
-      if (null != psiAnnotation) {
-        result.add(psiAnnotation);
-      }
-    }
+    addFieldsAnnotation(result, psiClass, SINGULAR_CLASS, BUILDER_DEFAULT_CLASS);
     return result;
   }
 
   @Override
   protected boolean validate(@NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiClass, @NotNull ProblemBuilder builder) {
-    // we skip validation here, bacause it will be validated by other BuilderClassProcessor
+    // we skip validation here, because it will be validated by other BuilderClassProcessor
     return true;//builderHandler.validate(psiClass, psiAnnotation, builder);
   }
 
@@ -75,17 +72,15 @@ public class BuilderProcessor extends AbstractClassProcessor {
       }
     }
 
-    PsiClass builderClass = builderHandler.getExistInnerBuilderClass(psiClass, null, psiAnnotation).orElse(null);
-    if (null == builderClass) {
-      // have to create full class (with all methods) here, or auto completion doesn't work
-      builderClass = builderHandler.createBuilderClass(psiClass, psiAnnotation);
+    final String builderClassName = builderHandler.getBuilderClassName(psiClass, psiAnnotation, null);
+    final PsiClass builderClass = psiClass.findInnerClassByName(builderClassName, false);
+    if (null != builderClass) {
+      builderHandler.createBuilderMethodIfNecessary(psiClass, null, builderClass, psiAnnotation)
+        .ifPresent(target::add);
+
+      builderHandler.createToBuilderMethodIfNecessary(psiClass, null, builderClass, psiAnnotation)
+        .ifPresent(target::add);
     }
-
-    builderHandler.createBuilderMethodIfNecessary(psiClass, null, builderClass, psiAnnotation)
-      .ifPresent(target::add);
-
-    builderHandler.createToBuilderMethodIfNecessary(psiClass, null, builderClass, psiAnnotation)
-      .ifPresent(target::add);
   }
 
   @Override

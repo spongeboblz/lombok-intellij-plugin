@@ -33,9 +33,9 @@ public class SetterProcessor extends AbstractClassProcessor {
 
   private final SetterFieldProcessor fieldProcessor;
 
-  public SetterProcessor(SetterFieldProcessor fieldProcessor) {
+  public SetterProcessor(@NotNull SetterFieldProcessor setterFieldProcessor) {
     super(PsiMethod.class, Setter.class);
-    this.fieldProcessor = fieldProcessor;
+    this.fieldProcessor = setterFieldProcessor;
   }
 
   @Override
@@ -65,7 +65,7 @@ public class SetterProcessor extends AbstractClassProcessor {
   }
 
   public Collection<PsiMethod> createFieldSetters(@NotNull PsiClass psiClass, @NotNull String methodModifier) {
-    Collection<PsiMethod> result = new ArrayList<PsiMethod>();
+    Collection<PsiMethod> result = new ArrayList<>();
 
     final Collection<PsiField> setterFields = filterSetterFields(psiClass);
 
@@ -80,7 +80,7 @@ public class SetterProcessor extends AbstractClassProcessor {
     final Collection<PsiMethod> classMethods = PsiClassUtil.collectClassMethodsIntern(psiClass);
     filterToleratedElements(classMethods);
 
-    final Collection<PsiField> setterFields = new ArrayList<PsiField>();
+    final Collection<PsiField> setterFields = new ArrayList<>();
     for (PsiField psiField : psiClass.getFields()) {
       boolean createSetter = true;
       PsiModifierList modifierList = psiField.getModifierList();

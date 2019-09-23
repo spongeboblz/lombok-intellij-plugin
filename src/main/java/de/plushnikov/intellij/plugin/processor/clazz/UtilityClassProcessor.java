@@ -57,7 +57,7 @@ public class UtilityClassProcessor extends AbstractClassProcessor {
           if (psiClassUp.getContext() instanceof PsiFile) {
             return true;
           }
-          Boolean isStatic = isStatic(psiClassUp.getModifierList());
+          boolean isStatic = isStatic(psiClassUp.getModifierList());
           if (isStatic || checkWrongType(psiClassUp)) {
             contextUp = contextUp.getContext();
           } else {
@@ -84,7 +84,7 @@ public class UtilityClassProcessor extends AbstractClassProcessor {
   @Override
   protected void generatePsiElements(@NotNull final PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
 
-    LombokLightMethodBuilder constructor = new LombokLightMethodBuilder(psiClass.getManager(), psiClass.getName())
+    LombokLightMethodBuilder constructorBuilder = new LombokLightMethodBuilder(psiClass.getManager(), psiClass.getName())
       .withConstructor(true)
       .withContainingClass(psiClass)
       .withNavigationElement(psiAnnotation)
@@ -92,7 +92,7 @@ public class UtilityClassProcessor extends AbstractClassProcessor {
 
     String methodBody = String.format("throw new %s(%s);", "java.lang.UnsupportedOperationException", "\"This is a utility class and cannot be instantiated\"");
 
-    constructor.withBody(PsiMethodUtil.createCodeBlockFromText(methodBody, psiClass));
-    target.add(constructor);
+    constructorBuilder.withBody(PsiMethodUtil.createCodeBlockFromText(methodBody, constructorBuilder));
+    target.add(constructorBuilder);
   }
 }

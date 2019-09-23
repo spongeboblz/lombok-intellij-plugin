@@ -10,13 +10,12 @@ public class ProjectSettings {
   public static final String LOMBOK_ENABLED_IN_PROJECT = PREFIX + "EnabledInProject";
   public static final String IS_VAL_ENABLED = PREFIX + "IS_VAL_Enabled";
   public static final String IS_BUILDER_ENABLED = PREFIX + "IS_BUILDER_Enabled";
+  public static final String IS_SUPER_BUILDER_ENABLED = PREFIX + "IS_SUPER_BUILDER_Enabled";
   public static final String IS_DELEGATE_ENABLED = PREFIX + "IS_DELEGATE_Enabled";
   public static final String IS_LOG_ENABLED = PREFIX + "IS_LOG_Enabled";
   public static final String IS_CONSTRUCTOR_ENABLED = PREFIX + "IS_CONSTRUCTOR_Enabled";
 
-  public static final String IS_THIRD_PARTY_ENABLED = PREFIX + "IS_THIRD_PARTY_Enabled";
-
-  public static final String IS_RUNTIME_PATCH_ENABLED = PREFIX + "IS_RUNTIME_PATCH_Enabled";
+  public static final String IS_ANNOTATION_PROCESSING_CHECK_ENABLED = PREFIX + "IS_ANNOTATION_PROCESSING_CHECK_Enabled";
   public static final String IS_LOMBOK_VERSION_CHECK_ENABLED = PREFIX + "IS_LOMBOK_VERSION_CHECK_Enabled";
   public static final String IS_MISSING_LOMBOK_CHECK_ENABLED = PREFIX + "IS_MISSING_LOMBOK_CHECK_Enabled";
 
@@ -44,7 +43,7 @@ public class ProjectSettings {
     return properties.getBoolean(propertyName, defaultValue);
   }
 
-  public static void setEnabled(@NotNull Project project, final String propertyName, boolean value) {
+  private static void setEnabled(@NotNull Project project, final String propertyName, boolean value) {
     setEnabled(PropertiesComponent.getInstance(project), propertyName, value);
   }
 

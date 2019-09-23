@@ -22,7 +22,7 @@ import java.util.List;
 public class DelegateFieldProcessor extends AbstractFieldProcessor {
   private final DelegateHandler delegateHandler;
 
-  @SuppressWarnings({"deprecation", "unchecked"})
+  @SuppressWarnings({"deprecation"})
   public DelegateFieldProcessor(@NotNull DelegateHandler delegateHandler) {
     super(PsiMethod.class, Delegate.class, lombok.experimental.Delegate.class);
     this.delegateHandler = delegateHandler;

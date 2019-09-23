@@ -1,20 +1,28 @@
 package de.plushnikov.intellij.plugin.action.delombok;
 
+import com.intellij.openapi.components.ServiceManager;
 import de.plushnikov.intellij.plugin.processor.clazz.DataProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.EqualsAndHashCodeProcessor;
-import de.plushnikov.intellij.plugin.processor.clazz.FieldNameConstantsProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.GetterProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.SetterProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.ToStringProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.UtilityClassProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.ValueProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.WitherProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderClassProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderPreDefinedInnerClassFieldProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderPreDefinedInnerClassMethodProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.builder.BuilderProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.builder.SuperBuilderClassProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.builder.SuperBuilderPreDefinedInnerClassFieldProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.builder.SuperBuilderPreDefinedInnerClassMethodProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.builder.SuperBuilderProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.AllArgsConstructorProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.NoArgsConstructorProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.constructor.RequiredArgsConstructorProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsOldProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsPredefinedInnerClassFieldProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.fieldnameconstants.FieldNameConstantsProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.log.CommonsLogProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.log.FloggerProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.log.JBossLogProcessor;
@@ -28,56 +36,54 @@ import de.plushnikov.intellij.plugin.processor.field.FieldNameConstantsFieldProc
 import de.plushnikov.intellij.plugin.processor.field.GetterFieldProcessor;
 import de.plushnikov.intellij.plugin.processor.field.SetterFieldProcessor;
 import de.plushnikov.intellij.plugin.processor.field.WitherFieldProcessor;
-import de.plushnikov.intellij.plugin.processor.handler.BuilderHandler;
-import de.plushnikov.intellij.plugin.processor.handler.DelegateHandler;
 import de.plushnikov.intellij.plugin.processor.method.BuilderClassMethodProcessor;
 import de.plushnikov.intellij.plugin.processor.method.BuilderMethodProcessor;
 import de.plushnikov.intellij.plugin.processor.method.DelegateMethodProcessor;
 
-public class DelombokEverythingAction extends BaseDelombokAction {
+public class DelombokEverythingAction extends AbstractDelombokAction {
 
-  public DelombokEverythingAction() {
-    super(createHandler());
-  }
+  protected DelombokHandler createHandler() {
+    return new DelombokHandler(true,
+      ServiceManager.getService(RequiredArgsConstructorProcessor.class),
+      ServiceManager.getService(AllArgsConstructorProcessor.class),
+      ServiceManager.getService(NoArgsConstructorProcessor.class),
 
-  private static BaseDelombokHandler createHandler() {
-    final GetterFieldProcessor getterFieldProcessor = new GetterFieldProcessor();
-    final GetterProcessor getterProcessor = new GetterProcessor(getterFieldProcessor);
+      ServiceManager.getService(DataProcessor.class),
+      ServiceManager.getService(GetterProcessor.class),
+      ServiceManager.getService(ValueProcessor.class),
+      ServiceManager.getService(WitherProcessor.class),
+      ServiceManager.getService(SetterProcessor.class),
+      ServiceManager.getService(EqualsAndHashCodeProcessor.class),
+      ServiceManager.getService(ToStringProcessor.class),
 
-    final SetterFieldProcessor setterFieldProcessor = new SetterFieldProcessor();
-    final SetterProcessor setterProcessor = new SetterProcessor(setterFieldProcessor);
+      ServiceManager.getService(CommonsLogProcessor.class), ServiceManager.getService(JBossLogProcessor.class), ServiceManager.getService(Log4jProcessor.class),
+      ServiceManager.getService(Log4j2Processor.class), ServiceManager.getService(LogProcessor.class), ServiceManager.getService(Slf4jProcessor.class),
+      ServiceManager.getService(XSlf4jProcessor.class), ServiceManager.getService(FloggerProcessor.class),
 
-    final EqualsAndHashCodeProcessor equalsAndHashCodeProcessor = new EqualsAndHashCodeProcessor();
-    final ToStringProcessor toStringProcessor = new ToStringProcessor();
+      ServiceManager.getService(GetterFieldProcessor.class),
+      ServiceManager.getService(SetterFieldProcessor.class),
+      ServiceManager.getService(WitherFieldProcessor.class),
+      ServiceManager.getService(DelegateFieldProcessor.class),
+      ServiceManager.getService(DelegateMethodProcessor.class),
 
-    final RequiredArgsConstructorProcessor requiredArgsConstructorProcessor = new RequiredArgsConstructorProcessor();
-    final AllArgsConstructorProcessor allArgsConstructorProcessor = new AllArgsConstructorProcessor();
-    final NoArgsConstructorProcessor noArgsConstructorProcessor = new NoArgsConstructorProcessor();
+      ServiceManager.getService(FieldNameConstantsOldProcessor.class),
+      ServiceManager.getService(FieldNameConstantsFieldProcessor.class),
+      ServiceManager.getService(FieldNameConstantsProcessor.class),
+      ServiceManager.getService(FieldNameConstantsPredefinedInnerClassFieldProcessor.class),
 
-    final DelegateHandler delegateHandler = new DelegateHandler();
-    final BuilderHandler builderHandler = new BuilderHandler(toStringProcessor, noArgsConstructorProcessor);
+      ServiceManager.getService(UtilityClassProcessor.class),
 
-    final FieldNameConstantsFieldProcessor fieldNameConstantsFieldProcessor = new FieldNameConstantsFieldProcessor();
+      ServiceManager.getService(BuilderPreDefinedInnerClassFieldProcessor.class),
+      ServiceManager.getService(BuilderPreDefinedInnerClassMethodProcessor.class),
+      ServiceManager.getService(BuilderClassProcessor.class),
+      ServiceManager.getService(BuilderClassMethodProcessor.class),
+      ServiceManager.getService(BuilderMethodProcessor.class),
+      ServiceManager.getService(BuilderProcessor.class),
 
-    return new BaseDelombokHandler(true,
-      requiredArgsConstructorProcessor, allArgsConstructorProcessor, noArgsConstructorProcessor,
-      new DataProcessor(getterProcessor, setterProcessor, equalsAndHashCodeProcessor, toStringProcessor, requiredArgsConstructorProcessor, noArgsConstructorProcessor),
-      getterProcessor, new ValueProcessor(getterProcessor, equalsAndHashCodeProcessor, toStringProcessor, allArgsConstructorProcessor, noArgsConstructorProcessor),
-      new WitherProcessor(new WitherFieldProcessor(requiredArgsConstructorProcessor)),
-      setterProcessor, equalsAndHashCodeProcessor, toStringProcessor,
-      new CommonsLogProcessor(), new JBossLogProcessor(), new Log4jProcessor(), new Log4j2Processor(), new LogProcessor(), new Slf4jProcessor(), new XSlf4jProcessor(), new FloggerProcessor(),
-      getterFieldProcessor, setterFieldProcessor,
-      new WitherFieldProcessor(requiredArgsConstructorProcessor),
-      new DelegateFieldProcessor(delegateHandler),
-      new DelegateMethodProcessor(delegateHandler),
-
-      fieldNameConstantsFieldProcessor,
-      new FieldNameConstantsProcessor(fieldNameConstantsFieldProcessor),
-
-      new BuilderPreDefinedInnerClassFieldProcessor(builderHandler),
-      new BuilderPreDefinedInnerClassMethodProcessor(builderHandler),
-      new BuilderClassProcessor(builderHandler), new BuilderClassMethodProcessor(builderHandler),
-      new BuilderMethodProcessor(builderHandler), new BuilderProcessor(allArgsConstructorProcessor, builderHandler));
+      ServiceManager.getService(SuperBuilderPreDefinedInnerClassFieldProcessor.class),
+      ServiceManager.getService(SuperBuilderPreDefinedInnerClassMethodProcessor.class),
+      ServiceManager.getService(SuperBuilderClassProcessor.class),
+      ServiceManager.getService(SuperBuilderProcessor.class));
   }
 
 }

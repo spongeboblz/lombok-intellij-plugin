@@ -30,18 +30,21 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractFieldProcessor extends AbstractProcessor implements FieldProcessor {
 
-  AbstractFieldProcessor(@NotNull Class<? extends PsiElement> supportedClass, @NotNull Class<? extends Annotation> supportedAnnotationClass) {
+  AbstractFieldProcessor(@NotNull Class<? extends PsiElement> supportedClass,
+                         @NotNull Class<? extends Annotation> supportedAnnotationClass) {
     super(supportedClass, supportedAnnotationClass);
   }
 
-  AbstractFieldProcessor(@NotNull Class<? extends PsiElement> supportedClass, @NotNull Class<? extends Annotation> supportedAnnotationClass, Class<? extends Annotation>... equivalentAnnotationClasses) {
-    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClasses);
+  AbstractFieldProcessor(@NotNull Class<? extends PsiElement> supportedClass,
+                         @NotNull Class<? extends Annotation> supportedAnnotationClass,
+                         @NotNull Class<? extends Annotation> equivalentAnnotationClass) {
+    super(supportedClass, supportedAnnotationClass, equivalentAnnotationClass);
   }
 
   @NotNull
   @Override
   public List<? super PsiElement> process(@NotNull PsiClass psiClass) {
-    List<? super PsiElement> result = new ArrayList<PsiElement>();
+    List<? super PsiElement> result = new ArrayList<>();
     for (PsiField psiField : PsiClassUtil.collectClassFieldsIntern(psiClass)) {
       PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {
@@ -55,7 +58,7 @@ public abstract class AbstractFieldProcessor extends AbstractProcessor implement
 
   @NotNull
   public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
-    List<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
+    List<PsiAnnotation> result = new ArrayList<>();
     for (PsiField psiField : PsiClassUtil.collectClassFieldsIntern(psiClass)) {
       PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiField, getSupportedAnnotationClasses());
       if (null != psiAnnotation) {
@@ -84,7 +87,7 @@ public abstract class AbstractFieldProcessor extends AbstractProcessor implement
 
   protected abstract void generatePsiElements(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target);
 
-  protected void copyAnnotations(final PsiField fromPsiElement, final PsiModifierList toModifierList, final Pattern... patterns) {
+  void copyAnnotations(final PsiField fromPsiElement, final PsiModifierList toModifierList, final Pattern... patterns) {
     final Collection<String> annotationsToCopy = PsiAnnotationUtil.collectAnnotationsToCopy(fromPsiElement, patterns);
     for (String annotationFQN : annotationsToCopy) {
       toModifierList.addAnnotation(annotationFQN);

@@ -2,58 +2,56 @@ package de.plushnikov.intellij.plugin.processor;
 
 import de.plushnikov.intellij.plugin.AbstractLombokParsingTestCase;
 
-import java.io.IOException;
-
 /**
  * Unit tests for IntelliJPlugin for Lombok, based on lombok test classes
  */
 public class LoggerTest extends AbstractLombokParsingTestCase {
 
-  public void testLogger$LoggerCommons() throws IOException {
+  public void testLogger$LoggerCommons() {
     doTest(true);
   }
 
-  public void testLogger$LoggerJul() throws IOException {
+  public void testLogger$LoggerJul() {
     doTest(true);
   }
 
-  public void testLogger$LoggerLog4j() throws IOException {
+  public void testLogger$LoggerLog4j() {
     doTest(true);
   }
 
-  public void testLogger$LoggerLog4j2() throws IOException {
+  public void testLogger$LoggerLog4j2() {
     doTest(true);
   }
 
-  public void testLogger$LoggerSlf4j() throws IOException {
+  public void testLogger$LoggerSlf4j() {
     doTest(true);
   }
 
-  public void testLogger$LoggerSlf4jAlreadyExists() throws IOException {
+  public void testLogger$LoggerSlf4jAlreadyExists() {
     doTest(true);
   }
 
-  public void testLogger$LoggerSlf4jOnNonType() throws IOException {
+  public void testLogger$LoggerSlf4jOnNonType() {
     doTest(true);
   }
 
-  public void testLogger$LoggerSlf4jTypes() throws IOException {
+  public void testLogger$LoggerSlf4jTypes() {
     doTest(true);
   }
 
-  public void testLogger$LoggerSlf4jWithPackage() throws IOException {
+  public void testLogger$LoggerSlf4jWithPackage() {
     doTest(true);
   }
 
-  public void testLogger$LoggerXSlf4j() throws IOException {
+  public void testLogger$LoggerXSlf4j() {
     doTest(true);
   }
 
-  public void testLogger$LoggerJBossLog() throws IOException {
+  public void testLogger$LoggerJBossLog() {
     doTest(true);
   }
 
-  public void testLogger$LoggerFlogger() throws IOException {
+  public void testLogger$LoggerFlogger() {
     doTest(true);
   }
 }

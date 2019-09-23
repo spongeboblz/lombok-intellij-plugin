@@ -1,23 +1,7 @@
 package de.plushnikov.intellij.plugin.util;
 
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiAnnotationMemberValue;
-import com.intellij.psi.PsiArrayInitializerMemberValue;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassObjectAccessExpression;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiElementFactory;
-import com.intellij.psi.PsiEnumConstant;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiLiteralExpression;
-import com.intellij.psi.PsiModifierList;
-import com.intellij.psi.PsiModifierListOwner;
-import com.intellij.psi.PsiReferenceExpression;
-import com.intellij.psi.PsiType;
-import com.intellij.psi.PsiTypeElement;
-import com.intellij.psi.PsiVariable;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,7 +39,7 @@ public class PsiAnnotationUtil {
     PsiAnnotationMemberValue attributeValue = psiAnnotation.findAttributeValue(parameter);
     if (attributeValue instanceof PsiArrayInitializerMemberValue) {
       final PsiAnnotationMemberValue[] memberValues = ((PsiArrayInitializerMemberValue) attributeValue).getInitializers();
-      result = new ArrayList<T>(memberValues.length);
+      result = new ArrayList<>(memberValues.length);
 
       for (PsiAnnotationMemberValue memberValue : memberValues) {
         T value = resolveElementValue(memberValue, asClass);
@@ -121,6 +105,11 @@ public class PsiAnnotationUtil {
       if (asClass.isAssignableFrom(PsiAnnotation.class)) {
         value = (T) psiElement;
       }
+    } else if (psiElement instanceof PsiPrefixExpression) {
+      if (asClass.isAssignableFrom(String.class)) {
+        String expressionText = psiElement.getText();
+        value = (T) expressionText;
+      }
     }
     return value;
   }
@@ -138,7 +127,7 @@ public class PsiAnnotationUtil {
 
   @NotNull
   public static Collection<String> collectAnnotationsToCopy(@NotNull PsiField psiField, final Pattern... patterns) {
-    Collection<String> annotationsToCopy = new ArrayList<String>();
+    Collection<String> annotationsToCopy = new ArrayList<>();
     PsiModifierList modifierList = psiField.getModifierList();
     if (null != modifierList) {
       for (PsiAnnotation psiAnnotation : modifierList.getAnnotations()) {

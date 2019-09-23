@@ -6,8 +6,8 @@ import com.intellij.codeInsight.generation.EncapsulatableClassMember;
 import com.intellij.codeInsight.generation.OverrideImplementUtil;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.ide.util.MemberChooser;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -23,18 +23,18 @@ import java.util.List;
 public abstract class BaseRefactorHandler implements Runnable {
   protected final Project project;
   protected final Editor editor;
-  protected final MemberChooser<ClassMember> chooser;
+  private final MemberChooser<ClassMember> chooser;
 
   public BaseRefactorHandler(DataContext dataContext, Project project) {
     this.project = project;
     editor = PlatformDataKeys.EDITOR.getData(dataContext);
 
-    PsiFile psiFile = DataKeys.PSI_FILE.getData(dataContext);
+    PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(dataContext);
     PsiClass psiClass = OverrideImplementUtil.getContextClass(project, editor, psiFile, false);
 
     List<EncapsulatableClassMember> classMembers = getEncapsulatableClassMembers(psiClass);
-    chooser = new MemberChooser<ClassMember>(
-      classMembers.toArray(new ClassMember[classMembers.size()]), true, true, project);
+    chooser = new MemberChooser<>(
+      classMembers.toArray(new ClassMember[0]), true, true, project);
     chooser.setTitle(getChooserTitle());
     chooser.setCopyJavadocVisible(false);
   }

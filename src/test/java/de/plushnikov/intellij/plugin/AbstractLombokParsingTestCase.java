@@ -2,26 +2,11 @@ package de.plushnikov.intellij.plugin;
 
 import com.google.common.base.Objects;
 import com.intellij.pom.PomNamedTarget;
-import com.intellij.psi.PsiAnnotation;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiClassType;
-import com.intellij.psi.PsiCodeBlock;
-import com.intellij.psi.PsiExpression;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiMethod;
-import com.intellij.psi.PsiModifier;
-import com.intellij.psi.PsiModifierList;
-import com.intellij.psi.PsiParameter;
-import com.intellij.psi.PsiParameterList;
-import com.intellij.psi.PsiReferenceList;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,7 +35,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
     return true;
   }
 
-  public void doTest() throws IOException {
+  public void doTest() {
     doTest(false);
   }
 
@@ -62,19 +47,19 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
     compareFiles(loadBeforeLombokFile(testName), loadAfterDeLombokFile(testName));
   }
 
-  protected PsiJavaFile loadBeforeLombokFile(String testName) {
+  private PsiJavaFile loadBeforeLombokFile(String testName) {
     return getPsiJavaFile(testName, "before");
   }
 
-  protected PsiJavaFile loadAfterDeLombokFile(String testName) {
+  private PsiJavaFile loadAfterDeLombokFile(String testName) {
     return getPsiJavaFile(testName, "after");
   }
 
   @NotNull
   private PsiJavaFile getPsiJavaFile(String testName, String type) {
     final String fileName = testName.replace('$', '/') + ".java";
-    final String beforeFileName = type + "/" + fileName;
-    final PsiFile psiFile = loadToPsiFile(beforeFileName);
+    final String filePath = type + "/" + fileName;
+    final PsiFile psiFile = loadToPsiFile(filePath);
     if (!(psiFile instanceof PsiJavaFile)) {
       fail("The test file type is not supported");
     }
@@ -175,8 +160,9 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
 
     for (String modifier : PsiModifier.MODIFIERS) {
       boolean haveSameModifiers = afterModifierList.hasModifierProperty(modifier) == beforeModifierList.hasModifierProperty(modifier);
-      final PsiMethod afterModifierListParent = PsiTreeUtil.getParentOfType(afterModifierList, PsiMethod.class);
-      assertTrue(modifier + " Modifier is not equal for " + (null == afterModifierListParent ? "..." : afterModifierListParent.getText()), haveSameModifiers);
+      final PsiMethod afterModifierListParentMethod = PsiTreeUtil.getParentOfType(afterModifierList, PsiMethod.class);
+      final PsiClass afterModifierListParentClass = PsiTreeUtil.getParentOfType(afterModifierList, PsiClass.class);
+      assertTrue(modifier + " Modifier is not equal for " + (null == afterModifierListParentMethod ? afterModifierListParentClass.getName() : afterModifierListParentMethod.getText()), haveSameModifiers);
     }
 
     if (shouldCompareAnnotations()) {
@@ -232,7 +218,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
         if (!codeBlocksAreEqual) {
           String text1 = beforeMethodBody.getText().replaceAll("java\\.lang\\.", "").replaceAll("\\s+", "");
           String text2 = afterMethodBody.getText().replaceAll("java\\.lang\\.", "").replaceAll("\\s+", "");
-          assertEquals("Methods not equal, Method: (" + afterMethod.getName() + ") Class:" + afterClass.getName(), text2, text1);
+          assertEquals("Method: (" + afterMethod.getName() + ") in Class:" + afterClass.getName() + " different", text2, text1);
         }
       } else {
         if (null != afterMethodBody) {
@@ -243,7 +229,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
   }
 
   private Collection<PsiMethod> filterMethods(PsiMethod[] beforeMethods, PsiMethod compareMethod) {
-    Collection<PsiMethod> result = new ArrayList<PsiMethod>();
+    Collection<PsiMethod> result = new ArrayList<>();
     for (PsiMethod psiMethod : beforeMethods) {
       final PsiParameterList compareMethodParameterList = compareMethod.getParameterList();
       final PsiParameterList psiMethodParameterList = psiMethod.getParameterList();
@@ -261,7 +247,7 @@ public abstract class AbstractLombokParsingTestCase extends AbstractLombokLightC
 
   @NotNull
   private Collection<String> mapToTypeString(PsiParameterList compareMethodParameterList) {
-    Collection<String> result = new ArrayList<String>();
+    Collection<String> result = new ArrayList<>();
     final PsiParameter[] compareMethodParameterListParameters = compareMethodParameterList.getParameters();
     for (PsiParameter compareMethodParameterListParameter : compareMethodParameterListParameters) {
       result.add(stripJavaLang(compareMethodParameterListParameter.getType().getCanonicalText()));

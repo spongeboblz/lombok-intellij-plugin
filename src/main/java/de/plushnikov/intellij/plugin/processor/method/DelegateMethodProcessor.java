@@ -16,7 +16,7 @@ public class DelegateMethodProcessor extends AbstractMethodProcessor {
 
   private final DelegateHandler handler;
 
-  @SuppressWarnings({"deprecation", "unchecked"})
+  @SuppressWarnings({"deprecation"})
   public DelegateMethodProcessor(@NotNull DelegateHandler delegateHandler) {
     super(PsiMethod.class, lombok.Delegate.class, lombok.experimental.Delegate.class);
     handler = delegateHandler;

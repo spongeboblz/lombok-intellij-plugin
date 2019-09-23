@@ -24,9 +24,8 @@ public class BuilderClassMethodProcessor extends AbstractMethodProcessor {
 
   private final BuilderHandler builderHandler;
 
-  @SuppressWarnings({"deprecation", "unchecked"})
   public BuilderClassMethodProcessor(@NotNull BuilderHandler builderHandler) {
-    super(PsiClass.class, Builder.class, lombok.experimental.Builder.class);
+    super(PsiClass.class, Builder.class);
     this.builderHandler = builderHandler;
   }
 
@@ -43,9 +42,7 @@ public class BuilderClassMethodProcessor extends AbstractMethodProcessor {
   protected void processIntern(@NotNull PsiMethod psiMethod, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     final PsiClass psiClass = psiMethod.getContainingClass();
     if (null != psiClass) {
-      if (builderHandler.notExistInnerClass(psiClass, psiMethod, psiAnnotation)) {
-        target.add(builderHandler.createBuilderClass(psiClass, psiMethod, psiAnnotation));
-      }
+      builderHandler.createBuilderClassIfNotExist(psiClass, psiMethod, psiAnnotation).ifPresent(target::add);
     }
   }
 }

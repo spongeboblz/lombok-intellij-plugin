@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.util;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiAnnotationMemberValue;
 import com.intellij.psi.PsiAnnotationParameterList;
@@ -17,6 +18,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Plushnikov Michail
@@ -30,24 +33,38 @@ public class LombokProcessorUtil {
     put(PsiUtil.ACCESS_LEVEL_PRIVATE, AccessLevel.PRIVATE);
   }};
 
+  private static final Map<String, AccessLevel> VALUE_ACCESS_LEVEL_MAP = Stream.of(AccessLevel.values())
+    .collect(Collectors.toMap(AccessLevel::name, v -> v));
+
   @Nullable
+  @PsiModifier.ModifierConstant
   public static String getMethodModifier(@NotNull PsiAnnotation psiAnnotation) {
     return getLevelVisibility(psiAnnotation, "value");
   }
 
   @Nullable
+  @PsiModifier.ModifierConstant
   public static String getAccessVisibility(@NotNull PsiAnnotation psiAnnotation) {
     return getLevelVisibility(psiAnnotation, "access");
   }
 
   @Nullable
+  @PsiModifier.ModifierConstant
   public static String getLevelVisibility(@NotNull PsiAnnotation psiAnnotation) {
     return getLevelVisibility(psiAnnotation, "level");
   }
 
   @Nullable
-  public static String getLevelVisibility(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
+  @PsiModifier.ModifierConstant
+  private static String getLevelVisibility(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
     return convertAccessLevelToJavaModifier(PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, parameter));
+  }
+
+  @NotNull
+  public static AccessLevel getAccessLevel(@NotNull PsiAnnotation psiAnnotation, @NotNull String parameter) {
+    final String annotationValue = StringUtil.notNullize(
+      PsiAnnotationUtil.getStringAnnotationValue(psiAnnotation, parameter), AccessLevel.NONE.name());
+    return VALUE_ACCESS_LEVEL_MAP.computeIfAbsent(annotationValue, p -> AccessLevel.NONE);
   }
 
   public static boolean isLevelVisible(@NotNull PsiAnnotation psiAnnotation) {
@@ -60,7 +77,7 @@ public class LombokProcessorUtil {
       return Collections.emptyList();
     }
     Collection<PsiAnnotation> annotations = PsiAnnotationUtil.getAnnotationValues((PsiAnnotation) onXValue, "value", PsiAnnotation.class);
-    Collection<String> annotationStrings = new ArrayList<String>();
+    Collection<String> annotationStrings = new ArrayList<>();
     for (PsiAnnotation annotation : annotations) {
       PsiAnnotationParameterList params = annotation.getParameterList();
       annotationStrings.add(PsiAnnotationSearchUtil.getSimpleNameOf(annotation) + params.getText());
@@ -69,6 +86,7 @@ public class LombokProcessorUtil {
   }
 
   @Nullable
+  @PsiModifier.ModifierConstant
   private static String convertAccessLevelToJavaModifier(String value) {
     if (null == value || value.isEmpty()) {
       return PsiModifier.PUBLIC;

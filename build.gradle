@@ -1,105 +1,76 @@
-buildscript {
-  repositories {
-    mavenCentral()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-    maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
-    maven { url 'https://jitpack.io' }
-  }
-  dependencies {
-    classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.4.0-SNAPSHOT"
-    classpath "com.github.hurricup:gradle-grammar-kit-plugin:2018.1.2"
-  }
+plugins {
+  id "org.jetbrains.intellij" version "0.4.10"
+  id "org.jetbrains.grammarkit" version "2018.3"
+  id "com.github.ManifestClasspath" version "0.1.0-RELEASE"
 }
 
-import org.jetbrains.grammarkit.tasks.GenerateLexer
-import org.jetbrains.grammarkit.tasks.GenerateParser
-
-allprojects {
-
-  apply plugin: 'java'
-  apply plugin: 'idea'
-  apply plugin: 'org.jetbrains.intellij'
-  apply plugin: 'org.jetbrains.grammarkit'
-  apply plugin: 'jacoco'
-
-  group pluginGroup
-  version = pluginVersion
-
-  sourceCompatibility = javaVersion
-  targetCompatibility = javaVersion
-
-  tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-  }
-
-  sourceSets {
-    main {
-      java.srcDirs 'src/main/java', 'generated/src'
-      resources.srcDirs 'src/main/resources', 'generated/resources'
-    }
-    test {
-      java.srcDir 'test/java'
-      resources.srcDirs 'test/resources', 'testData'
-    }
-  }
-
-  repositories {
-    mavenCentral()
-    maven { url 'https://dl.bintray.com/jetbrains/markdown' }
-    maven { url 'https://jitpack.io' }
-  }
+repositories {
+  jcenter()
+  mavenCentral()
+  maven { url "https://www.jitpack.io" }
+}
+// Fix Bug https://github.com/jitpack/jitpack.io/issues/3973
+project.repositories.removeAll {
+  it instanceof MavenArtifactRepository && it.url.toString() == 'https://jitpack.io'
 }
 
-idea {
-  project {
-    jdkName = javaVersion
-    languageLevel = javaVersion
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.jetbrains.intellij'
+apply plugin: 'org.jetbrains.grammarkit'
+apply plugin: 'jacoco'
+apply plugin: "com.github.ManifestClasspath"
+
+def isCI = System.getenv("CI")
+def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
+ideaVersion = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
+def isEAP = ideaVersion.contains("LATEST-EAP-SNAPSHOT") || ideaVersion.take(4).contains(".")
+def artifactVersion = pluginVersion + "-" + (isEAP ? "EAP" : ideaVersion)
+println "IdeaVersion is : ${ideaVersion}"
+println "ArtifactVersion is : ${artifactVersion}"
+
+group = pluginGroup
+version = artifactVersion
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
+//  options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+sourceSets {
+  main {
+    java.srcDirs 'src/main/java', 'generated/src'
+    resources.srcDirs 'src/main/resources', 'generated/resources'
+  }
+  test {
+    java.srcDir 'test/java'
+    resources.srcDirs 'test/resources', 'testData'
   }
 }
 
 intellij {
-  version System.getenv().getOrDefault('IDEA_VERSION', ideaVersion)
+  version ideaVersion
   println "Building for IntelliJ version: ${version}"
 
   pluginName pluginName
   updateSinceUntilBuild true
   sameSinceUntilBuild false
-  sandboxDirectory = "${rootProject.projectDir}/idea-sandbox/idea-${version}"
-
-  plugins 'coverage'
+  sandboxDirectory = "${rootProject.projectDir}/idea-sandbox/idea-${ideaVersion}"
 }
 
 patchPluginXml {
-  def ideaVersionExternDefinition = System.getenv("IDEA_VERSION")
-  ideaVersion = ideaVersionExternDefinition ? ideaVersionExternDefinition : ideaVersion
-
-  version pluginVersion + "." + ideaVersion
-  // use open until build for last release
-  if (ideaVersion.contains("LATEST-EAP-SNAPSHOT") || ideaVersion.take(4).contains(".")) {
-    untilBuild ""
-    version pluginVersion + ".IDEA-EAP"
-  }
+  version artifactVersion
 
   pluginDescription(file(descriptionFile).text)
   changeNotes(file(changesFile).text)
 }
 
 publishPlugin {
-  username publishUsername
-  password publishPassword
-}
-
-grammarKit {
-  //tag or short commit hash of IntelliJ patched JFlex
-  jflexRelease = '1.7.0-1'
-  //tag or short commit hash of Grammar-Kit to use
-  grammarKitRelease = '1.4.3'
-}
-
-plugins.withType(JavaPlugin) {
-  test {
-    systemProperty "NO_FS_ROOTS_ACCESS_CHECK", "true"
-  }
+  token System.getenv('IJ_PLUGIN_TOKEN')
 }
 
 jacocoTestReport {
@@ -109,24 +80,15 @@ jacocoTestReport {
   }
 }
 
-// Configurations
 configurations {
   lombok
-  lombok_dep
-  hrisey
 }
 
 dependencies {
-  lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.2', classifier: 'sources', ext: 'jar'
-  lombok_dep group: 'org.projectlombok', name: 'lombok', version: '1.16.20', classifier: 'sources', ext: 'jar'
-  hrisey group: 'pl.mg6.hrisey', name: 'hrisey', version: '0.3.1', classifier: 'sources', ext: 'jar'
-
-  compile(project(':patcher')) {
-    exclude group: 'org.javassist'
-  }
+  lombok group: 'org.projectlombok', name: 'lombok', version: '1.18.10', classifier: 'sources', ext: 'jar'
 
   testCompile group: 'junit', name: 'junit', version: '4.12'
-  testCompile group: 'org.mockito', name: 'mockito-core', version: '1.+'
+  testCompile group: 'org.mockito', name: 'mockito-core', version: '3.0.0'
 }
 
 // Tasks
@@ -149,28 +111,11 @@ copy {
     include 'lombok/ToString.java'
     include 'lombok/SneakyThrows.java'
     include 'lombok/Value.java'
+    include 'lombok/With.java'
     include 'lombok/val.java'
     include 'lombok/var.java'
     include 'lombok/Singular.java'
     include 'lombok/core/handlers/Singulars.java'
-  }
-  into("generated/src")
-}
-
-copy {
-  includeEmptyDirs = false
-  from({ zipTree(configurations.lombok_dep.singleFile) }) {
-    include 'lombok/experimental/Value.java'
-    include 'lombok/experimental/Builder.java'
-  }
-  into("generated/src")
-}
-
-copy {
-  includeEmptyDirs = false
-  from({ zipTree(configurations.hrisey.singleFile) }) {
-    include 'hrisey/Parcelable.java'
-    include 'hrisey/Preferences.java'
   }
   into("generated/src")
 }
@@ -183,7 +128,14 @@ copy {
   into("generated/resources")
 }
 
-task generateLombokConfigParser(type: GenerateParser) {
+grammarKit {
+  //tag or short commit hash of IntelliJ patched JFlex
+  jflexRelease = '1.7.0-1'
+  //tag or short commit hash of Grammar-Kit to use
+  grammarKitRelease = '1.4.3'
+}
+
+task generateLombokConfigParser(type: org.jetbrains.grammarkit.tasks.GenerateParser) {
   println "Generating Parser for GrammerKit: ${grammarKit.grammarKitRelease}"
 
   source "src/main/resources/de/plushnikov/intellij/plugin/language/lombokConfig.bnf"
@@ -192,7 +144,7 @@ task generateLombokConfigParser(type: GenerateParser) {
   pathToPsiRoot "/de/plushnikov/intellij/plugin/language/psi"
 }
 
-task generateLombokConfigLexer(type: GenerateLexer) {
+task generateLombokConfigLexer(type: org.jetbrains.grammarkit.tasks.GenerateLexer) {
   dependsOn generateLombokConfigParser
   println "Generating Lexer for JFlexRelease: ${grammarKit.jflexRelease}"
 
@@ -207,3 +159,22 @@ clean.doFirst {
 
 compileJava.dependsOn generateLombokConfigLexer
 check.dependsOn jacocoTestReport
+
+test {
+  // show standard out and standard error of the test JVM(s) on the console
+  testLogging {
+    exceptionFormat = 'full'
+    showStandardStreams = true
+  }
+  if( isCI ){
+    testLogging {
+      events 'passed', 'skipped', 'failed', 'standardOut', 'standardError'
+      exceptionFormat "full"
+    }
+  }
+
+  // listen to events in the test execution lifecycle
+  beforeTest { descriptor ->
+    logger.lifecycle("Running test: " + descriptor)
+  }
+}

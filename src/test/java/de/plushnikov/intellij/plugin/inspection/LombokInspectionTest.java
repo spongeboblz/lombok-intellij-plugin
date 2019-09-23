@@ -25,10 +25,12 @@ public abstract class LombokInspectionTest extends LightInspectionTestCase {
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    final String lombokLibPath = PathUtil.toSystemIndependentName(new File(TEST_DATA_INSPECTION_DIRECTORY, "lib").getAbsolutePath());
+
+    final String lombokLibPath = PathUtil.toSystemIndependentName(
+      new File(TEST_DATA_INSPECTION_DIRECTORY, "lib").getAbsolutePath());
     VfsRootAccess.allowRootAccess(lombokLibPath);
 
-    TestUtil.addLibrary(myFixture, getModule(), "Lombok", lombokLibPath, "lombok.jar");
+    TestUtil.addLibrary(myFixture, getModule(), "Lombok Library", lombokLibPath, "lombok-1.18.8.jar");
   }
 
   @NotNull
@@ -37,12 +39,12 @@ public abstract class LombokInspectionTest extends LightInspectionTestCase {
     return new DefaultLightProjectDescriptor() {
       @Override
       public Sdk getSdk() {
-        return JavaSdk.getInstance().createJdk("java 1.7", "lib/mockJDK-1.7", false);
+        return JavaSdk.getInstance().createJdk("java 1.8", "lib/mockJDK-1.8", false);
       }
 
       @Override
       public void configureModule(@NotNull Module module, @NotNull ModifiableRootModel model, @NotNull ContentEntry contentEntry) {
-        model.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.JDK_1_7);
+        model.getModuleExtension(LanguageLevelModuleExtension.class).setLanguageLevel(LanguageLevel.JDK_1_8);
       }
     };
   }

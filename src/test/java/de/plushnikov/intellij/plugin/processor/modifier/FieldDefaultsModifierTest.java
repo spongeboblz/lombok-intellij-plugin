@@ -5,33 +5,28 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiModifier;
 import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
+import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Alexej Kubarev
  */
-public class FieldDefaultsModifierTest extends LightCodeInsightFixtureTestCase {
+public class FieldDefaultsModifierTest extends AbstractLombokLightCodeInsightTestCase {
 
   @Override
-  protected String getTestDataPath() {
-    return "testData/augment/modifier";
-  }
-
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
-    myFixture.addClass("package lombok;\npublic enum AccessLevel { PUBLIC, MODULE, PROTECTED, PACKAGE, PRIVATE, NONE; }");
-    myFixture.addClass("package lombok.experimental;\npublic @interface PackagePrivate { }");
-    myFixture.addClass("package lombok.experimental;\npublic @interface NonFinal { }");
-    myFixture.addClass("package lombok.experimental;\n" +
-      "public @interface FieldDefaults {\n" +
-      "AccessLevel level() default AccessLevel.NONE;\n" +
-      "boolean makeFinal() default false;\n" +
-      "}");
+  protected String getBasePath() {
+    return super.getBasePath() + "/augment/modifier";
   }
 
   //<editor-fold desc="Handling of makeFinal and @NonFinal">
+
+  public void testFieldDefaultsStaticFinal() {
+
+    PsiModifierList modifierList = getFieldModifierListAtCaret();
+
+    assertFalse("@FieldDefaults(makeFinal = true) should not make static field final", modifierList.hasModifierProperty(PsiModifier.FINAL));
+    assertTrue("@FieldDefaults(makeFinal = true) should keep static field package local", modifierList.hasModifierProperty(PsiModifier.PACKAGE_LOCAL));
+  }
 
   public void testFieldDefaultsFinal() {
 
@@ -59,6 +54,15 @@ public class FieldDefaultsModifierTest extends LightCodeInsightFixtureTestCase {
   //</editor-fold>
 
   //<editor-fold desc="Handling of visibility modifiers">
+
+  public void testFieldDefaultsStaticPrivate() {
+
+    PsiModifierList modifierList = getFieldModifierListAtCaret();
+
+    assertFalse("@FieldDefaults should not make static field private", modifierList.hasModifierProperty(PsiModifier.PRIVATE));
+    assertTrue("@FieldDefaults should keep static field package local", modifierList.hasModifierProperty(PsiModifier.PACKAGE_LOCAL));
+  }
+
 
   public void testFieldDefaultsNone() {
 
@@ -122,7 +126,7 @@ public class FieldDefaultsModifierTest extends LightCodeInsightFixtureTestCase {
 
   @NotNull
   private PsiModifierList getFieldModifierListAtCaret() {
-    PsiFile file = myFixture.configureByFile(getTestName(false) + ".java");
+    PsiFile file = loadToPsiFile(getTestName(false) + ".java");
     PsiField field = PsiTreeUtil.getParentOfType(file.findElementAt(myFixture.getCaretOffset()), PsiField.class);
 
     assertNotNull(field);

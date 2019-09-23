@@ -1,5 +1,6 @@
 package de.plushnikov.intellij.plugin.action.lombok;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiClass;
@@ -24,9 +25,9 @@ public class LombokLoggerHandler extends BaseLombokHandler {
 
   protected void processClass(@NotNull PsiClass psiClass) {
     final Collection<AbstractLogProcessor> logProcessors = Arrays.asList(
-      new CommonsLogProcessor(), new JBossLogProcessor(),
-      new Log4jProcessor(), new Log4j2Processor(), new LogProcessor(),
-      new Slf4jProcessor(), new XSlf4jProcessor(), new FloggerProcessor());
+      ServiceManager.getService(CommonsLogProcessor.class), ServiceManager.getService(JBossLogProcessor.class),
+      ServiceManager.getService(Log4jProcessor.class), ServiceManager.getService(Log4j2Processor.class), ServiceManager.getService(LogProcessor.class),
+      ServiceManager.getService(Slf4jProcessor.class), ServiceManager.getService(XSlf4jProcessor.class), ServiceManager.getService(FloggerProcessor.class));
 
     final String lombokLoggerName = AbstractLogProcessor.getLoggerName(psiClass);
     final boolean lombokLoggerIsStatic = AbstractLogProcessor.isLoggerStatic(psiClass);

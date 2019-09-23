@@ -37,10 +37,12 @@ public class ValueProcessor extends AbstractClassProcessor {
   private final AllArgsConstructorProcessor allArgsConstructorProcessor;
   private final NoArgsConstructorProcessor noArgsConstructorProcessor;
 
-  @SuppressWarnings({"deprecation", "unchecked"})
-  public ValueProcessor(GetterProcessor getterProcessor, EqualsAndHashCodeProcessor equalsAndHashCodeProcessor,
-                        ToStringProcessor toStringProcessor, AllArgsConstructorProcessor allArgsConstructorProcessor, NoArgsConstructorProcessor noArgsConstructorProcessor) {
-    super(PsiMethod.class, Value.class, lombok.experimental.Value.class);
+  public ValueProcessor(@NotNull GetterProcessor getterProcessor,
+                        @NotNull EqualsAndHashCodeProcessor equalsAndHashCodeProcessor,
+                        @NotNull ToStringProcessor toStringProcessor,
+                        @NotNull AllArgsConstructorProcessor allArgsConstructorProcessor,
+                        @NotNull NoArgsConstructorProcessor noArgsConstructorProcessor) {
+    super(PsiMethod.class, Value.class);
 
     this.getterProcessor = getterProcessor;
     this.equalsAndHashCodeProcessor = equalsAndHashCodeProcessor;
@@ -68,7 +70,7 @@ public class ValueProcessor extends AbstractClassProcessor {
     return result;
   }
 
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("unchecked")
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
 
     if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, Getter.class)) {
@@ -82,7 +84,7 @@ public class ValueProcessor extends AbstractClassProcessor {
     }
     // create required constructor only if there are no other constructor annotations
     if (PsiAnnotationSearchUtil.isNotAnnotatedWith(psiClass, NoArgsConstructor.class, RequiredArgsConstructor.class, AllArgsConstructor.class,
-      lombok.experimental.Builder.class, lombok.Builder.class)) {
+      lombok.Builder.class)) {
       final Collection<PsiMethod> definedConstructors = PsiClassUtil.collectClassConstructorIntern(psiClass);
       filterToleratedElements(definedConstructors);
       // and only if there are no any other constructors!
@@ -101,6 +103,14 @@ public class ValueProcessor extends AbstractClassProcessor {
     }
   }
 
+  @NotNull
+  @Override
+  public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
+    final Collection<PsiAnnotation> result = super.collectProcessedAnnotations(psiClass);
+    addClassAnnotation(result, psiClass, lombok.experimental.NonFinal.class.getName(), lombok.experimental.PackagePrivate.class.getName());
+    addFieldsAnnotation(result, psiClass, lombok.experimental.NonFinal.class.getName(), lombok.experimental.PackagePrivate.class.getName());
+    return result;
+  }
 
   @Override
   public LombokPsiElementUsage checkFieldUsage(@NotNull PsiField psiField, @NotNull PsiAnnotation psiAnnotation) {

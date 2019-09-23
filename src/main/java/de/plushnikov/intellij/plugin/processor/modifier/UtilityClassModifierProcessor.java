@@ -22,7 +22,6 @@ public class UtilityClassModifierProcessor implements ModifierProcessor {
 
   @Override
   public boolean isSupported(@NotNull PsiModifierList modifierList) {
-
     PsiElement modifierListParent = modifierList.getParent();
 
     if (modifierListParent instanceof PsiClass) {
@@ -32,7 +31,7 @@ public class UtilityClassModifierProcessor implements ModifierProcessor {
       }
     }
 
-    if (!isElementFieldMethodOrInnerClass(modifierListParent)) {
+    if (!isElementFieldOrMethodOrInnerClass(modifierListParent)) {
       return false;
     }
 
@@ -43,7 +42,6 @@ public class UtilityClassModifierProcessor implements ModifierProcessor {
 
   @Override
   public void transformModifiers(@NotNull PsiModifierList modifierList, @NotNull final Set<String> modifiers) {
-
     final PsiElement parent = modifierList.getParent();
 
     // FINAL
@@ -55,12 +53,13 @@ public class UtilityClassModifierProcessor implements ModifierProcessor {
     }
 
     // STATIC
-    if (isElementFieldMethodOrInnerClass(parent)) {
+    if (isElementFieldOrMethodOrInnerClass(parent)) {
       modifiers.add(PsiModifier.STATIC);
     }
   }
 
-  private boolean isElementFieldMethodOrInnerClass(PsiElement element) {
-    return element instanceof PsiField || element instanceof PsiMethod || (element instanceof PsiClass && element.getParent() instanceof PsiClass);
+  private boolean isElementFieldOrMethodOrInnerClass(PsiElement element) {
+    return element instanceof PsiField || element instanceof PsiMethod ||
+      (element instanceof PsiClass && element.getParent() instanceof PsiClass && !((PsiClass) element.getParent()).isInterface());
   }
 }

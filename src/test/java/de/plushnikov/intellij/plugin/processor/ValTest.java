@@ -9,27 +9,27 @@ import de.plushnikov.intellij.plugin.AbstractLombokLightCodeInsightTestCase;
 
 public class ValTest extends AbstractLombokLightCodeInsightTestCase {
 
-  public void testSimpleInt() throws Exception {
+  public void testSimpleInt() {
     configureClass("100");
     verifyLocalVariableType("int");
   }
 
-  public void testSimpleString() throws Exception {
+  public void testSimpleString() {
     configureClass("\"\"");
     verifyLocalVariableType("java.lang.String");
   }
 
-  public void testNewString() throws Exception {
+  public void testNewString() {
     configureClass("new java.lang.String(\"Hello World\")");
     verifyLocalVariableType("java.lang.String");
   }
 
-  public void testDoubleExpression() throws Exception {
+  public void testDoubleExpression() {
     configureClass("10.0 + 20.0");
     verifyLocalVariableType("double");
   }
 
-  public void testIntParameter() throws Exception {
+  public void testIntParameter() {
     myFixture.configureByText("a.java", "import lombok.val;\n" +
       "abstract class Test {\n" +
       "    private void test() {\n" +
@@ -45,25 +45,30 @@ public class ValTest extends AbstractLombokLightCodeInsightTestCase {
     assertTrue(localParameter.toString(), localParameter instanceof PsiParameter);
     final PsiType type = ((PsiParameter) localParameter).getType();
     assertNotNull(localParameter.toString(), type);
-    assertEquals(type.getCanonicalText(), true, type.equalsToText("int"));
+    assertTrue(type.getCanonicalText(), type.equalsToText("int"));
   }
 
-  public void testBooleanExpression() throws Exception {
+  public void testBooleanExpression() {
     configureClass("10 == 10");
     verifyLocalVariableType("boolean");
   }
 
-  public void testGenericCollection() throws Exception {
+  public void testGenericCollection() {
     configureClass("java.util.Arrays.asList(\"a\",\"b\")");
     verifyLocalVariableType("java.util.List<java.lang.String>");
   }
 
-  public void testGenericNewCollection() throws Exception {
+  public void testGenericNewCollection() {
     configureClass("new java.util.ArrayList<Integer>()");
     verifyLocalVariableType("java.util.ArrayList<java.lang.Integer>");
   }
 
-  public void testGenericMethod168() throws Exception {
+  public void testGenericTypeDiamond296() {
+    configureClass("new java.util.concurrent.atomic.AtomicReference<>(\"abc\")");
+    verifyLocalVariableType("java.util.concurrent.atomic.AtomicReference<java.lang.String>");
+  }
+
+  public void testGenericMethod168() {
     configureClass("forClass(Integer.class)",
       "public static <T> java.util.List<T> forClass(Class<T> clazz) {\n" +
         "            return new java.util.ArrayList<T>();\n" +
@@ -71,7 +76,7 @@ public class ValTest extends AbstractLombokLightCodeInsightTestCase {
     verifyLocalVariableType("java.util.List<java.lang.Integer>");
   }
 
-  public void testConditionalExpressionThen260() throws Exception {
+  public void testConditionalExpressionThen260() {
     configureClass("TYPE_ID_MAPPINGS.containsKey(\"key\") ? newHashSet(TYPE_ID_MAPPINGS.get(\"key\")) : MULTIPLE_SEARCH_TYPES",
       "private static java.util.Map<java.lang.String, java.lang.String> TYPE_ID_MAPPINGS = new java.util.HashMap<>();\n" +
         " private static java.util.Set<java.lang.String> MULTIPLE_SEARCH_TYPES = new java.util.HashSet<>();\n" +
@@ -81,7 +86,7 @@ public class ValTest extends AbstractLombokLightCodeInsightTestCase {
     verifyLocalVariableType("java.util.Collection<java.lang.String>");
   }
 
-  public void testConditionalExpressionElse260() throws Exception {
+  public void testConditionalExpressionElse260() {
     configureClass("TYPE_ID_MAPPINGS.containsKey(\"key\") ? newHashSet(TYPE_ID_MAPPINGS.get(\"key\")) : MULTIPLE_SEARCH_TYPES",
       "private static java.util.Map<java.lang.String, java.lang.String> TYPE_ID_MAPPINGS = new java.util.HashMap<>();\n" +
         " private static java.util.Set<java.lang.String> MULTIPLE_SEARCH_TYPES = new java.util.HashSet<>();\n" +

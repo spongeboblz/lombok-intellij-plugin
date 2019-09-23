@@ -24,9 +24,8 @@ public class BuilderClassProcessor extends AbstractClassProcessor {
 
   private final BuilderHandler builderHandler;
 
-  @SuppressWarnings({"deprecation", "unchecked"})
   public BuilderClassProcessor(@NotNull BuilderHandler builderHandler) {
-    super(PsiClass.class, Builder.class, lombok.experimental.Builder.class);
+    super(PsiClass.class, Builder.class);
     this.builderHandler = builderHandler;
   }
 
@@ -41,8 +40,6 @@ public class BuilderClassProcessor extends AbstractClassProcessor {
   }
 
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    if (builderHandler.notExistInnerClass(psiClass, psiAnnotation)) {
-      target.add(builderHandler.createBuilderClass(psiClass, psiAnnotation));
-    }
+    builderHandler.createBuilderClassIfNotExist(psiClass, null, psiAnnotation).ifPresent(target::add);
   }
 }

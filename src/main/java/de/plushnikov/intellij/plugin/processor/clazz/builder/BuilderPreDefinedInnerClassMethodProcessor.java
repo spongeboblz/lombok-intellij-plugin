@@ -31,7 +31,7 @@ public class BuilderPreDefinedInnerClassMethodProcessor extends AbstractBuilderP
   }
 
   protected Collection<? extends PsiElement> generatePsiElements(@NotNull PsiClass psiParentClass, @Nullable PsiMethod psiParentMethod, @NotNull PsiAnnotation psiAnnotation, @NotNull PsiClass psiBuilderClass) {
-    final Collection<PsiMethod> result = new ArrayList<>();
+    final Collection<PsiMethod> result = new ArrayList<PsiMethod>();
 
     final Collection<String> existedMethodNames = PsiClassUtil.collectClassMethodsIntern(psiBuilderClass).stream()
       .filter(psiMethod -> PsiAnnotationSearchUtil.isNotAnnotatedWith(psiMethod, Tolerate.class))

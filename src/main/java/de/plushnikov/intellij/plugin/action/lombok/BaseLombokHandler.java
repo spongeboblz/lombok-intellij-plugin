@@ -87,7 +87,7 @@ public abstract class BaseLombokHandler implements CodeInsightActionHandler {
   }
 
   private boolean haveAllMethodsSameAccessLevel(Collection<PsiMethod> psiMethods) {
-    final Set<Integer> accessLevelSet = new HashSet<>();
+    final Set<Integer> accessLevelSet = new HashSet<Integer>();
     for (PsiMethod psiMethod : psiMethods) {
       accessLevelSet.add(PsiUtil.getAccessLevel(psiMethod.getModifierList()));
     }

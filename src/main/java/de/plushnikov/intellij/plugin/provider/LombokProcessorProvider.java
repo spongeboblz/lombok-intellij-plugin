@@ -42,8 +42,8 @@ public class LombokProcessorProvider {
   public LombokProcessorProvider(@NotNull PropertiesComponent propertiesComponent) {
     myPropertiesComponent = propertiesComponent;
 
-    lombokProcessors = new ConcurrentHashMap<>();
-    lombokTypeProcessors = new ConcurrentHashMap<>();
+    lombokProcessors = new ConcurrentHashMap<String, Collection<Processor>>();
+    lombokTypeProcessors = new ConcurrentHashMap<Class, Collection<Processor>>();
     registeredAnnotationNames = ConcurrentHashMap.newKeySet();
   }
 
@@ -91,7 +91,7 @@ public class LombokProcessorProvider {
   Collection<LombokProcessorData> getApplicableProcessors(@NotNull PsiMember psiMember) {
     Collection<LombokProcessorData> result = Collections.emptyList();
     if (verifyLombokAnnotationPresent(psiMember)) {
-      result = new ArrayList<>();
+      result = new ArrayList<LombokProcessorData>();
 
       addApplicableProcessors(psiMember, result);
       final PsiClass psiClass = psiMember.getContainingClass();

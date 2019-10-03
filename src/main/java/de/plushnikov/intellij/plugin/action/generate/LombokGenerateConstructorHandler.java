@@ -25,7 +25,7 @@ public class LombokGenerateConstructorHandler extends GenerateConstructorHandler
   @Override
   protected ClassMember[] getAllOriginalMembers(PsiClass aClass) {
     PsiField[] fields = aClass.getFields();
-    ArrayList<ClassMember> array = new ArrayList<>();
+    ArrayList<ClassMember> array = new ArrayList<ClassMember>();
     ImplicitUsageProvider[] implicitUsageProviders = ImplicitUsageProvider.EP_NAME.getExtensions();
     fieldLoop:
     for (PsiField field : fields) {
@@ -54,9 +54,9 @@ public class LombokGenerateConstructorHandler extends GenerateConstructorHandler
 
     final List<? extends GenerationInfo> memberPrototypes = super.generateMemberPrototypes(proxyClass, members);
 
-    final List<GenerationInfo> result = new ArrayList<>();
+    final List<GenerationInfo> result = new ArrayList<GenerationInfo>();
     for (GenerationInfo memberPrototype : memberPrototypes) {
-      result.add(new PsiGenerationInfo<>(memberPrototype.getPsiMember(), false));
+      result.add(new PsiGenerationInfo<com.intellij.psi.PsiMember>(memberPrototype.getPsiMember(), false));
     }
     return result;
   }

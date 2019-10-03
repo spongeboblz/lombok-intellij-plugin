@@ -53,7 +53,7 @@ public abstract class AbstractSingularHandler implements BuilderElementHandler {
 
   @Override
   public Collection<PsiMethod> renderBuilderMethod(@NotNull BuilderInfo info) {
-    List<PsiMethod> methods = new ArrayList<>();
+    List<PsiMethod> methods = new ArrayList<PsiMethod>();
 
     final PsiType returnType = info.getBuilderType();
     final String fieldName = info.getFieldName();

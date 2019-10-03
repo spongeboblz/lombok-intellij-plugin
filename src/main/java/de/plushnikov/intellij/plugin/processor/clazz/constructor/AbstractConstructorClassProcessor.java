@@ -109,7 +109,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
   public boolean validateIsConstructorNotDefined(@NotNull PsiClass psiClass, @Nullable String staticConstructorName, @NotNull Collection<PsiField> params, @NotNull ProblemBuilder builder) {
     boolean result = true;
 
-    final List<PsiType> paramTypes = new ArrayList<>(params.size());
+    final List<PsiType> paramTypes = new ArrayList<PsiType>(params.size());
     for (PsiField param : params) {
       paramTypes.add(param.getType());
     }
@@ -161,7 +161,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
 
   @NotNull
   protected Collection<PsiField> getAllNotInitializedAndNotStaticFields(@NotNull PsiClass psiClass) {
-    Collection<PsiField> allNotInitializedNotStaticFields = new ArrayList<>();
+    Collection<PsiField> allNotInitializedNotStaticFields = new ArrayList<PsiField>();
     final boolean classAnnotatedWithValue = PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, Value.class);
     for (PsiField psiField : psiClass.getFields()) {
       // skip fields named $
@@ -192,7 +192,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
 
   @NotNull
   public Collection<PsiField> getRequiredFields(@NotNull PsiClass psiClass) {
-    Collection<PsiField> result = new ArrayList<>();
+    Collection<PsiField> result = new ArrayList<PsiField>();
     final boolean classAnnotatedWithValue = PsiAnnotationSearchUtil.isAnnotatedWith(psiClass, Value.class);
 
     for (PsiField psiField : getAllNotInitializedAndNotStaticFields(psiClass)) {
@@ -254,7 +254,7 @@ public abstract class AbstractConstructorClassProcessor extends AbstractClassPro
       .withNavigationElement(psiAnnotation)
       .withModifier(modifier);
 
-    final List<String> fieldNames = new ArrayList<>();
+    final List<String> fieldNames = new ArrayList<String>();
     final AccessorsInfo classAccessorsInfo = AccessorsInfo.build(psiClass);
     for (PsiField psiField : params) {
       final AccessorsInfo paramAccessorsInfo = AccessorsInfo.build(psiField, classAccessorsInfo);

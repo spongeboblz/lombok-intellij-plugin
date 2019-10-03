@@ -95,12 +95,12 @@ public class DelegateHandler {
   public <T extends PsiMember & PsiNamedElement> void generateElements(@NotNull T psiElement, @NotNull PsiType psiElementType, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
     final PsiManager manager = psiElement.getContainingFile().getManager();
 
-    final Collection<Pair<PsiMethod, PsiSubstitutor>> includesMethods = new LinkedHashSet<>();
+    final Collection<Pair<PsiMethod, PsiSubstitutor>> includesMethods = new LinkedHashSet<Pair<PsiMethod, PsiSubstitutor>>();
 
     final Collection<PsiType> types = collectDelegateTypes(psiAnnotation, psiElementType);
     addMethodsOfTypes(types, includesMethods);
 
-    final Collection<Pair<PsiMethod, PsiSubstitutor>> excludeMethods = new LinkedHashSet<>();
+    final Collection<Pair<PsiMethod, PsiSubstitutor>> excludeMethods = new LinkedHashSet<Pair<PsiMethod, PsiSubstitutor>>();
     PsiClassType javaLangObjectType = PsiType.getJavaLangObject(manager, psiElement.getResolveScope());
     addMethodsOfType(javaLangObjectType, excludeMethods);
 
@@ -140,7 +140,7 @@ public class DelegateHandler {
       for (PsiMethod psiMethod : psiMethods) {
         if (!psiMethod.isConstructor() && psiMethod.hasModifierProperty(PsiModifier.PUBLIC) && !psiMethod.hasModifierProperty(PsiModifier.STATIC)) {
 
-          Pair<PsiMethod, PsiSubstitutor> newMethodSubstitutorPair = new Pair<>(psiMethod, classSubstitutor);
+          Pair<PsiMethod, PsiSubstitutor> newMethodSubstitutorPair = new Pair<PsiMethod, PsiSubstitutor>(psiMethod, classSubstitutor);
 
           boolean acceptMethod = true;
           for (Pair<PsiMethod, PsiSubstitutor> uniquePair : allMethods) {
@@ -166,7 +166,7 @@ public class DelegateHandler {
   }
 
   private Collection<Pair<PsiMethod, PsiSubstitutor>> findMethodsToDelegate(Collection<Pair<PsiMethod, PsiSubstitutor>> includesMethods, Collection<Pair<PsiMethod, PsiSubstitutor>> excludeMethods) {
-    final Collection<Pair<PsiMethod, PsiSubstitutor>> result = new ArrayList<>();
+    final Collection<Pair<PsiMethod, PsiSubstitutor>> result = new ArrayList<Pair<PsiMethod, PsiSubstitutor>>();
     for (Pair<PsiMethod, PsiSubstitutor> includesMethodPair : includesMethods) {
       boolean acceptMethod = true;
       for (Pair<PsiMethod, PsiSubstitutor> excludeMethodPair : excludeMethods) {

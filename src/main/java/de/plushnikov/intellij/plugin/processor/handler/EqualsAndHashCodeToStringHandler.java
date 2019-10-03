@@ -117,8 +117,8 @@ public class EqualsAndHashCodeToStringHandler {
 
     final Collection<PsiMember> psiMembers = PsiClassUtil.collectClassMemberIntern(psiClass);
 
-    final Collection<String> fieldNames2BeReplaced = new ArrayList<>();
-    final List<MemberInfo> result = new ArrayList<>(psiMembers.size());
+    final Collection<String> fieldNames2BeReplaced = new ArrayList<String>();
+    final List<MemberInfo> result = new ArrayList<MemberInfo>(psiMembers.size());
 
     for (PsiMember psiMember : psiMembers) {
       final PsiAnnotation includeAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiMember, annotationIncludeFQN);
@@ -236,7 +236,7 @@ public class EqualsAndHashCodeToStringHandler {
     if (exclude.isEmpty()) {
       return Collections.emptySet();
     } else {
-      return new HashSet<>(exclude);
+      return new HashSet<String>(exclude);
     }
   }
 }

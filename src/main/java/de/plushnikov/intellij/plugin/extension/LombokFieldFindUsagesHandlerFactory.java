@@ -48,7 +48,7 @@ public class LombokFieldFindUsagesHandlerFactory extends FindUsagesHandlerFactor
         final PsiClass containingClass = psiField.getContainingClass();
         if (containingClass != null) {
 
-          final Collection<PsiElement> elements = new ArrayList<>();
+          final Collection<PsiElement> elements = new ArrayList<PsiElement>();
           processClass(containingClass, psiField, elements);
 
           Arrays.stream(containingClass.getInnerClasses())

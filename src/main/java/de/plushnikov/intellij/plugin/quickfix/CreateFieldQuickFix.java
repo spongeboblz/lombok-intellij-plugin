@@ -87,7 +87,7 @@ public class CreateFieldQuickFix extends LocalQuickFixOnPsiElement implements In
 
           final List<PsiGenerationInfo<PsiField>> generationInfos = GenerateMembersUtil.insertMembersAtOffset(
             myClass.getContainingFile(), editor.getCaretModel().getOffset(),
-            Collections.singletonList(new PsiGenerationInfo<>(psiField)));
+            Collections.singletonList(new PsiGenerationInfo<PsiField>(psiField)));
           if (!generationInfos.isEmpty()) {
             PsiField psiMember = generationInfos.iterator().next().getPsiMember();
             editor.getCaretModel().moveToOffset(psiMember.getTextRange().getEndOffset());

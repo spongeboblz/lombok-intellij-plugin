@@ -23,15 +23,15 @@ import java.util.Set;
  * @author Plushnikov Michail
  */
 public class LombokLightModifierList extends LightModifierList {
-  private static final Set<String> ALL_MODIFIERS = new HashSet<>(Arrays.asList(PsiModifier.MODIFIERS));
+  private static final Set<String> ALL_MODIFIERS = new HashSet<String>(Arrays.asList(PsiModifier.MODIFIERS));
 
   private final Map<String, PsiAnnotation> myAnnotations;
   private final Set<String> myImplicitModifiers;
 
   public LombokLightModifierList(PsiManager manager, final Language language, Collection<String> implicitModifiers, String... modifiers) {
     super(manager, language, modifiers);
-    this.myAnnotations = new HashMap<>();
-    this.myImplicitModifiers = new HashSet<>(implicitModifiers);
+    this.myAnnotations = new HashMap<String, PsiAnnotation>();
+    this.myImplicitModifiers = new HashSet<String>(implicitModifiers);
   }
 
   @Override
@@ -65,7 +65,7 @@ public class LombokLightModifierList extends LightModifierList {
   }
 
   private Collection<String> collectAllModifiers() {
-    Collection<String> result = new HashSet<>();
+    Collection<String> result = new HashSet<String>();
     for (@PsiModifier.ModifierConstant String modifier : ALL_MODIFIERS) {
       if (hasExplicitModifier(modifier)) {
         result.add(modifier);

@@ -62,7 +62,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
     PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, getSupportedAnnotationClasses());
     if (null != psiAnnotation) {
       if (supportAnnotationVariant(psiAnnotation) && validate(psiAnnotation, psiClass, ProblemEmptyBuilder.getInstance())) {
-        result = new ArrayList<>();
+        result = new ArrayList<PsiElement>();
         generatePsiElements(psiClass, psiAnnotation, result);
       }
     }
@@ -71,7 +71,7 @@ public abstract class AbstractClassProcessor extends AbstractProcessor implement
 
   @NotNull
   public Collection<PsiAnnotation> collectProcessedAnnotations(@NotNull PsiClass psiClass) {
-    Collection<PsiAnnotation> result = new ArrayList<>();
+    Collection<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
     PsiAnnotation psiAnnotation = PsiAnnotationSearchUtil.findAnnotation(psiClass, getSupportedAnnotationClasses());
     if (null != psiAnnotation) {
       result.add(psiAnnotation);

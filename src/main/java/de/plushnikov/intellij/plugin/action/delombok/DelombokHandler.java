@@ -53,7 +53,7 @@ public class DelombokHandler {
   }
 
   private void invoke(Project project, PsiClass psiClass, boolean processInnerClasses) {
-    Collection<PsiAnnotation> processedAnnotations = new HashSet<>();
+    Collection<PsiAnnotation> processedAnnotations = new HashSet<PsiAnnotation>();
 
     processModifierList(psiClass);
 
@@ -110,7 +110,7 @@ public class DelombokHandler {
   private void rebuildModifierList(@NotNull PsiModifierListOwner modifierListOwner) {
     final PsiModifierList modifierList = modifierListOwner.getModifierList();
     if (null != modifierList) {
-      final Set<String> lombokModifiers = new HashSet<>();
+      final Set<String> lombokModifiers = new HashSet<String>();
       LombokProcessorManager.getLombokModifierProcessors().forEach(modifierProcessor -> {
         if (modifierProcessor.isSupported(modifierList)) {
           modifierProcessor.transformModifiers(modifierList, lombokModifiers);
@@ -146,7 +146,7 @@ public class DelombokHandler {
   }
 
   public Collection<PsiAnnotation> collectProcessableAnnotations(@NotNull PsiClass psiClass) {
-    Collection<PsiAnnotation> result = new ArrayList<>();
+    Collection<PsiAnnotation> result = new ArrayList<PsiAnnotation>();
 
     for (AbstractProcessor lombokProcessor : lombokProcessors) {
       result.addAll(lombokProcessor.collectProcessedAnnotations(psiClass));

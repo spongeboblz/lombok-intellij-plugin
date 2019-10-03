@@ -46,7 +46,7 @@ public class LombokUsageTest extends AbstractLombokLightCodeInsightTestCase {
 
   private void assertUsages(Collection<UsageInfo> usages, String... usageTexts) {
     assertEquals(usageTexts.length, usages.size());
-    List<UsageInfo> sortedUsages = new ArrayList<>(usages);
+    List<UsageInfo> sortedUsages = new ArrayList<UsageInfo>(usages);
     sortedUsages.sort(LombokUsageTest::compareToByStartOffset);
     for (int i = 0; i < usageTexts.length; i++) {
       assertEquals(usageTexts[i], sortedUsages.get(i).getElement().getText().replaceAll("\\s*", ""));

@@ -47,7 +47,7 @@ public class ConfigDiscovery {
 
   @NotNull
   public String[] getMultipleValueLombokConfigProperty(@NotNull ConfigKey configKey, @NotNull PsiClass psiClass) {
-    final Collection<String> result = new HashSet<>();
+    final Collection<String> result = new HashSet<String>();
 
     final String canonicalPath = calculateCanonicalPath(psiClass);
     if (null != canonicalPath) {
@@ -156,7 +156,7 @@ public class ConfigDiscovery {
 
   @NotNull
   private List<String> discoverProperties(@NotNull ConfigKey configKey, @NotNull String canonicalPath, @NotNull Project project) {
-    List<String> result = new ArrayList<>();
+    List<String> result = new ArrayList<String>();
 
     final GlobalSearchScope searchScope = GlobalSearchScope.projectScope(project);
 

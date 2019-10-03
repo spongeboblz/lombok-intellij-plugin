@@ -260,7 +260,7 @@ public class LombokHandlerUtil {
 
     List<String> baseNames = toBaseNames(fieldName, isBoolean, fluent);
 
-    Set<String> names = new HashSet<>();
+    Set<String> names = new HashSet<String>();
     for (String baseName : baseNames) {
       if (adhereToFluent && fluent) {
         names.add(baseName);
@@ -272,12 +272,12 @@ public class LombokHandlerUtil {
       }
     }
 
-    return new ArrayList<>(names);
+    return new ArrayList<String>(names);
 
   }
 
   private static List<String> toBaseNames(CharSequence fieldName, boolean isBoolean, boolean fluent) {
-    List<String> baseNames = new ArrayList<>();
+    List<String> baseNames = new ArrayList<String>();
     baseNames.add(fieldName.toString());
 
     // isPrefix = field is called something like 'isRunning', so 'running' could also be the fieldname.

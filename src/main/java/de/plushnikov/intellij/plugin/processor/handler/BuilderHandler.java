@@ -49,7 +49,7 @@ public class BuilderHandler {
   private static final String TO_BUILDER_METHOD_NAME = "toBuilder";
   static final String TO_BUILDER_ANNOTATION_KEY = "toBuilder";
 
-  private static final Collection<String> INVALID_ON_BUILDERS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+  private static final Collection<String> INVALID_ON_BUILDERS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
     Getter.class.getSimpleName(), Setter.class.getSimpleName(), Wither.class.getSimpleName(), With.class.getSimpleName(),
     ToString.class.getSimpleName(), EqualsAndHashCode.class.getSimpleName(),
     RequiredArgsConstructor.class.getSimpleName(), AllArgsConstructor.class.getSimpleName(), NoArgsConstructor.class.getSimpleName(),

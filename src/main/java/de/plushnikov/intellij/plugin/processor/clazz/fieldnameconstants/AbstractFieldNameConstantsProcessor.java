@@ -51,7 +51,7 @@ public abstract class AbstractFieldNameConstantsProcessor extends AbstractClassP
 
   @NotNull
   Collection<PsiField> filterFields(@NotNull PsiClass psiClass, PsiAnnotation psiAnnotation) {
-    final Collection<PsiField> psiFields = new ArrayList<>();
+    final Collection<PsiField> psiFields = new ArrayList<PsiField>();
 
     final boolean onlyExplicitlyIncluded = PsiAnnotationUtil.getBooleanAnnotationValue(psiAnnotation, "onlyExplicitlyIncluded", false);
 

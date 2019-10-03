@@ -113,7 +113,7 @@ public class ConfigDiscoveryTest {
     final String[] properties = discovery.getMultipleValueLombokConfigProperty(configKey, psiClass);
     assertNotNull(properties);
     assertEquals(3, properties.length);
-    final ArrayList<String> list = new ArrayList<>(Arrays.asList(properties));
+    final ArrayList<String> list = new ArrayList<String>(Arrays.asList(properties));
     assertTrue(list.contains("b"));
     assertTrue(list.contains("cc"));
     assertTrue(list.contains("_d"));
@@ -133,7 +133,7 @@ public class ConfigDiscoveryTest {
     final String[] properties = discovery.getMultipleValueLombokConfigProperty(configKey, psiClass);
     assertNotNull(properties);
     assertEquals(1, properties.length);
-    final ArrayList<String> list = new ArrayList<>(Arrays.asList(properties));
+    final ArrayList<String> list = new ArrayList<String>(Arrays.asList(properties));
     assertTrue(list.contains("_d"));
   }
 }

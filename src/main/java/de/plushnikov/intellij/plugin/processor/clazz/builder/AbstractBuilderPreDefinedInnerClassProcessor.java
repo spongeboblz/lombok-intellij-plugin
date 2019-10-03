@@ -69,7 +69,7 @@ public abstract class AbstractBuilderPreDefinedInnerClassProcessor extends Abstr
     // use parent class as source!
     final String builderClassName = builderHandler.getBuilderClassName(psiParentClass, psiAnnotation, psiParentMethod);
 
-    List<? super PsiElement> result = new ArrayList<>();
+    List<? super PsiElement> result = new ArrayList<PsiElement>();
     // apply only to inner BuilderClass
     if (builderClassName.equals(psiClass.getName())) {
       result.addAll(generatePsiElements(psiParentClass, psiParentMethod, psiAnnotation, psiClass));

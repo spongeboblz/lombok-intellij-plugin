@@ -17,7 +17,7 @@ public class ProblemNewBuilder implements ProblemBuilder {
   }
 
   public ProblemNewBuilder(int size) {
-    this.problems = new HashSet<>(size);
+    this.problems = new HashSet<LombokProblem>(size);
   }
 
   public Set<LombokProblem> getProblems() {

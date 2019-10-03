@@ -26,7 +26,7 @@ public class LombokLightClassBuilder extends LightPsiClassBuilder implements Psi
   private final String myQualifiedName;
   private final Icon myBaseIcon;
   private final LombokLightModifierList myModifierList;
-  private Collection<PsiField> myFields = new ArrayList<>();
+  private Collection<PsiField> myFields = new ArrayList<PsiField>();
   private ClassInnerStuffCache myInnerCache = new ClassInnerStuffCache(this);
 
   public LombokLightClassBuilder(@NotNull PsiElement context, @NotNull String simpleName, @NotNull String qualifiedName) {

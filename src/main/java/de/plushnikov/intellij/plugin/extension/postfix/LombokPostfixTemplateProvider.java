@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class LombokPostfixTemplateProvider implements PostfixTemplateProvider {
 
-  private final Set<PostfixTemplate> lombokTemplates = new HashSet<>();
+  private final Set<PostfixTemplate> lombokTemplates = new HashSet<PostfixTemplate>();
 
   public LombokPostfixTemplateProvider() {
     lombokTemplates.add(new LombokValPostfixTemplate());

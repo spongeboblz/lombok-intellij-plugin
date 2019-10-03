@@ -268,7 +268,7 @@ public class SuperBuilderHandler extends BuilderHandler {
   private Collection<PsiMethod> addAllMethodsForBaseBuilderClass(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation,
                                                                  @NotNull PsiClass baseClassBuilder, List<BuilderInfo> builderInfos,
                                                                  @NotNull PsiClassType bType, @NotNull PsiClassType cType) {
-    final Collection<PsiMethod> result = new ArrayList<>();
+    final Collection<PsiMethod> result = new ArrayList<PsiMethod>();
 
     final Collection<String> existedMethodNames = PsiClassUtil.collectClassMethodsIntern(baseClassBuilder).stream()
       .filter(psiMethod -> PsiAnnotationSearchUtil.isNotAnnotatedWith(psiMethod, Tolerate.class))
@@ -381,7 +381,7 @@ public class SuperBuilderHandler extends BuilderHandler {
   public Collection<PsiMethod> createAllMethodsOfImplBuilder(@NotNull PsiClass psiClass,
                                                              @NotNull PsiAnnotation psiAnnotation,
                                                              @NotNull PsiClass implBuilderClass) {
-    Collection<PsiMethod> result = new ArrayList<>();
+    Collection<PsiMethod> result = new ArrayList<PsiMethod>();
 
     final Collection<String> existedMethodNames = PsiClassUtil.collectClassMethodsIntern(implBuilderClass).stream()
       .map(PsiMethod::getName).collect(Collectors.toSet());

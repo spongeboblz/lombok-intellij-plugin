@@ -167,3 +167,8 @@ Copyright (c) 2011-2019 Michail Plushnikov. See the [LICENSE](./LICENSE) file fo
 [badge-coveralls]:        https://coveralls.io/github/mplushnikov/lombok-intellij-plugin?branch=master
 [badge-paypal-img]:       https://img.shields.io/badge/donate-paypal-yellow.svg
 [badge-paypal]:           https://www.paypal.me/mplushnikov
+
+
+## spongebob：
+目前改动分支有backport_intellij_2017.2，backport_intellij_2019.2两个，其它分支需要编译自行merge，另外还有些版本分支中已经不提供了，可以到https://github.com/mplushnikov/lombok-intellij-plugin/releases 中寻找特定idea版本对应的插件的源码
+

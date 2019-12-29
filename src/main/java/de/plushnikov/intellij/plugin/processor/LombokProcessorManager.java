@@ -1,5 +1,7 @@
 package de.plushnikov.intellij.plugin.processor;
 
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import de.plushnikov.intellij.plugin.processor.clazz.DataProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.EqualsAndHashCodeProcessor;
@@ -32,6 +34,8 @@ import de.plushnikov.intellij.plugin.processor.clazz.log.Log4jProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.log.LogProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.log.Slf4jProcessor;
 import de.plushnikov.intellij.plugin.processor.clazz.log.XSlf4jProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.log.SpongeLogProcessor;
+import de.plushnikov.intellij.plugin.processor.clazz.log.HoppipSlf4jProcessor;
 import de.plushnikov.intellij.plugin.processor.field.DelegateFieldProcessor;
 import de.plushnikov.intellij.plugin.processor.field.FieldNameConstantsFieldProcessor;
 import de.plushnikov.intellij.plugin.processor.field.GetterFieldProcessor;
@@ -63,6 +67,8 @@ public class LombokProcessorManager {
       ServiceManager.getService(Log4j2Processor.class),
       ServiceManager.getService(Slf4jProcessor.class),
       ServiceManager.getService(XSlf4jProcessor.class),
+      ServiceManager.getService(SpongeLogProcessor.class),
+      ServiceManager.getService(HoppipSlf4jProcessor.class),
       ServiceManager.getService(CommonsLogProcessor.class),
       ServiceManager.getService(JBossLogProcessor.class),
       ServiceManager.getService(FloggerProcessor.class),
@@ -104,7 +110,7 @@ public class LombokProcessorManager {
 
       ServiceManager.getService(DelegateMethodProcessor.class),
 
-      ServiceManager.getService(CleanupProcessor.class)
+      ServiceManager.getService(de.plushnikov.intellij.plugin.processor.CleanupProcessor.class)
 //      ,ServiceManager.getService(SynchronizedProcessor.class)
     );
   }

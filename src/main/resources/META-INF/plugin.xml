@@ -50,6 +50,8 @@
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.log.Log4j2Processor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.log.Slf4jProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.log.XSlf4jProcessor"/>
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.log.SpongeLogProcessor"/>
+    <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.log.HoppipSlf4jProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.log.CommonsLogProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.log.JBossLogProcessor"/>
     <applicationService serviceImplementation="de.plushnikov.intellij.plugin.processor.clazz.log.FloggerProcessor"/>

@@ -12,6 +12,7 @@ import de.plushnikov.intellij.plugin.psi.LombokLightFieldBuilder;
 import de.plushnikov.intellij.plugin.settings.ProjectSettings;
 import de.plushnikov.intellij.plugin.util.PsiAnnotationUtil;
 import de.plushnikov.intellij.plugin.util.PsiClassUtil;
+import de.plushnikov.intellij.plugin.util.PsiAnnotationSearchUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,7 +94,16 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
       result = false;
     }
     if (result) {
-      final String loggerName = getLoggerName(psiClass);
+      final String annotationName = PsiAnnotationSearchUtil.getSimpleNameOf(psiAnnotation);
+      if("HoppipSlf4j".equals(annotationName)){
+        return validateHoppipSlf4j(psiAnnotation,psiClass,builder);
+      }
+
+      String loggerNameTemp = getLoggerName(psiClass);
+      if("SpongeLog".equals(annotationName)){
+        loggerNameTemp="spongeLog";
+      }
+      String loggerName=loggerNameTemp;
       if (hasFieldByName(psiClass, loggerName)) {
         builder.addError("Not generating field %s: A field with same name already exists", loggerName);
         result = false;
@@ -101,9 +111,92 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
     }
     return result;
   }
+  private boolean validateHoppipSlf4j(PsiAnnotation psiAnnotation,PsiClass psiClass,ProblemBuilder builder){
+    final Collection<String> names = PsiAnnotationUtil.getAnnotationValues(psiAnnotation,"names",String.class);
+    final Collection<String> params = PsiAnnotationUtil.getAnnotationValues(psiAnnotation,"params",String.class);
+    if(names.size()!=params.size()){
+      builder.addError("@HoppipSlf4j names length not equal to params length");
+      return false;
+    }
+    String[] nameArr=names.toArray(new String[]{});
+    String[] paramArr=params.toArray(new String[]{});
+    for(int i=0;i<names.size();i++){
+      if(nameArr[0]==null||nameArr[i].trim().length()==0){
+        builder.addError("@HoppipSlf4j names is not null or empty");
+        return false;
+      }
+      if(paramArr[i]==null){
+        builder.addError("@HoppipSlf4j params is not null or empty");
+        return false;
+      }
+      nameArr[i]=nameArr[i].trim();
+    }
+    for(int i=0;i<nameArr.length-1;i++){
+      for(int j=i+1;j<nameArr.length;j++){
+        if(nameArr[i].equals(nameArr[j])){
+          builder.addError("@HoppipSlf4j : duplicate name ["+nameArr[i]+"] not allowed");
+          return false;
+        }
+      }
+    }
+    for(String name:names){
+      if (hasFieldByName(psiClass, name)) {
+        builder.addError("Not generating field %s: A field with same name already exists", name);
+        return false;
+      }
+    }
+    return true;
+  }
 
   protected void generatePsiElements(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation, @NotNull List<? super PsiElement> target) {
-    target.add(createLoggerField(psiClass, psiAnnotation));
+    final String annotationName = PsiAnnotationSearchUtil.getSimpleNameOf(psiAnnotation);
+    if("HoppipSlf4j".equals(annotationName)){
+      final Collection<String> names = PsiAnnotationUtil.getAnnotationValues(psiAnnotation,"names",String.class);
+      final Collection<String> params = PsiAnnotationUtil.getAnnotationValues(psiAnnotation,"params",String.class);
+      String[] nameArr=names.toArray(new String[]{});
+      String[] paramArr=params.toArray(new String[]{});
+      for(int i=0;i<nameArr.length;i++){
+        target.add(createHoppipSlf4jField(psiClass, psiAnnotation,nameArr[i].trim(),paramArr[i]));
+      }
+    }else{
+      target.add(createLoggerField(psiClass, psiAnnotation));
+    }
+  }
+
+  /**
+   * 创建特殊的日志对象
+   * @param psiClass
+   * @param psiAnnotation
+   * @param loggerName
+   * @param param
+   * @return
+   */
+  private LombokLightFieldBuilder createHoppipSlf4jField(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation,String loggerName,String param) {
+    // called only after validation succeeded
+    final Project project = psiClass.getProject();
+    final PsiManager manager = psiClass.getContainingFile().getManager();
+
+    final PsiElementFactory psiElementFactory = JavaPsiFacade.getElementFactory(project);
+    String loggerType = getLoggerType(psiClass);
+    if (loggerType == null) {
+      // validated
+      throw new IllegalStateException("Invalid custom log declaration.");
+    }
+    final PsiType psiLoggerType = psiElementFactory.createTypeFromText(loggerType, psiClass);
+
+    LombokLightFieldBuilder loggerField = new LombokLightFieldBuilder(manager, loggerName, psiLoggerType)
+      .withContainingClass(psiClass)
+      .withModifier(PsiModifier.FINAL)
+      .withModifier(PsiModifier.PRIVATE)
+      .withNavigationElement(psiAnnotation);
+    if (isLoggerStatic(psiClass)) {
+      loggerField.withModifier(PsiModifier.STATIC);
+    }
+
+    final String initializerText = String.format(getLoggerInitializer(psiClass), "\""+param+"\"");
+    final PsiExpression initializer = psiElementFactory.createExpressionFromText(initializerText, psiClass);
+    loggerField.setInitializer(initializer);
+    return loggerField;
   }
 
   private LombokLightFieldBuilder createLoggerField(@NotNull PsiClass psiClass, @NotNull PsiAnnotation psiAnnotation) {
@@ -119,7 +212,13 @@ public abstract class AbstractLogProcessor extends AbstractClassProcessor {
     }
     final PsiType psiLoggerType = psiElementFactory.createTypeFromText(loggerType, psiClass);
 
-    LombokLightFieldBuilder loggerField = new LombokLightFieldBuilder(manager, getLoggerName(psiClass), psiLoggerType)
+    String loggerName=getLoggerName(psiClass);
+    final String annotationName = PsiAnnotationSearchUtil.getSimpleNameOf(psiAnnotation);
+    if("SpongeLog".equals(annotationName)){
+      loggerName="spongeLog";
+    }
+
+    LombokLightFieldBuilder loggerField = new LombokLightFieldBuilder(manager, loggerName, psiLoggerType)
       .withContainingClass(psiClass)
       .withModifier(PsiModifier.FINAL)
       .withModifier(PsiModifier.PRIVATE)
